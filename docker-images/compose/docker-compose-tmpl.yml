@@ -1,0 +1,25 @@
+version: '3.2'
+services:
+  ${NGINX_HOST}:
+    build:
+      context: .
+      dockerfile: ./docker-images/build/docker/nginx/Dockerfile
+    image: ${AWS_ECR_REPOSITORY_USERNAME}/nginx-${APP_NAME}:${APP_TAG}
+    ports:
+      - "${AWS_ECS_SERVICE_PORT}:8000"
+    depends_on:
+      - ${PHP_FPM_HOST}
+    networks:
+      - app-network
+
+  ${PHP_FPM_HOST}:
+    build:
+      context: .
+      dockerfile: ./docker-images/build/docker/php-fpm/Dockerfile
+    image: ${AWS_ECR_REPOSITORY_USERNAME}/php-fpm-${APP_NAME}:${APP_TAG}
+    networks:
+      - app-network
+
+networks:
+    app-network:
+        driver: bridge

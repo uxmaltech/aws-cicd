@@ -1,0 +1,28 @@
+# Use Alpine Linux
+FROM uxmaltech/php${PHP_FPM_VERSION}-fpm-alpine${NGINX_ALPINE_VERSION}:latest
+
+# Declare maintainer
+LABEL \
+    version="${APP_TAG}" \
+        Maintainer="${APP_AUTHOR} <${APP_EMAIL}>" \
+    Description="${APP_NAME}:php-fpm:${APP_TAG}"
+
+COPY docker-images/build/${APP_NAME} /www
+
+RUN mkdir -p /www/storage/framework/sessions
+RUN mkdir -p /www/storage/framework/views
+RUN mkdir -p /www/storage/framework/cache
+
+RUN chmod -R 777 /www/storage
+RUN chmod -R 777 /www/bootstrap/cache
+
+ENV PHP_FPM_ERROR_LOG=/proc/self/fd/2
+ENV PHP_FPM_LOG_LEVEL=error
+ENV PHP_FPM_LISTEN=0.0.0.0:${PHP_FPM_PORT}
+ENV PHP_FPM_USER=www-data
+ENV PHP_FPM_GROUP=www-data
+ENV PHP_FPM_LISTEN_OWNER=www-data
+ENV PHP_FPM_LISTEN_GROUP=www-data
+ENV PHP_MEMORY_LIMIT=512M
+ENV PHP_EXPOSE_PHP=On
+ENV PHP_SESSION_GC_MAXLIFETIME=1440
