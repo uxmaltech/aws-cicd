@@ -12,7 +12,7 @@ class InstallCommand extends Command
      *
      * @var string
      */
-    protected $name = 'aws-cicd:install';
+    protected $name = 'devtools:install';
 
     /**
      * The console command description.

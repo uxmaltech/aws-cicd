@@ -4,10 +4,10 @@ namespace Uxmal\AwsCICD;
 
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
-use Uxmal\AwsCICD\Command\AddBackOfficeUICommand;
-use Uxmal\AwsCICD\Command\BuildBaseDockerImagesCommand;
-use Uxmal\AwsCICD\Command\ComposeBuildCommand;
+use Uxmal\AwsCICD\Command\Docker\BuildBaseImagesCommand;
+use Uxmal\AwsCICD\Command\Docker\ComposeBuildCommand;
 use Uxmal\AwsCICD\Command\InstallCommand;
+use Uxmal\AwsCICD\Command\Uxmaltech\AddBackOfficeUICommand;
 
 class AwsCICDServiceProvider extends ServiceProvider implements DeferrableProvider
 {
@@ -31,10 +31,12 @@ class AwsCICDServiceProvider extends ServiceProvider implements DeferrableProvid
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
-                BuildBaseDockerImagesCommand::class,
+                // Docker
+                BuildBaseImagesCommand::class,
                 ComposeBuildCommand::class,
-                AddBackOfficeUICommand::class,
                 InstallCommand::class,
+                // Uxmaltech
+                AddBackOfficeUICommand::class,
             ]);
         }
     }
@@ -65,10 +67,12 @@ class AwsCICDServiceProvider extends ServiceProvider implements DeferrableProvid
     public function provides(): array
     {
         return [
-            BuildBaseDockerImagesCommand::class,
+            // Docker
+            BuildBaseImagesCommand::class,
             ComposeBuildCommand::class,
-            AddBackOfficeUICommand::class,
             InstallCommand::class,
+            // Uxmaltech
+            AddBackOfficeUICommand::class,
         ];
     }
 }

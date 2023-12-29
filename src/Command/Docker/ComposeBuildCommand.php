@@ -1,6 +1,6 @@
 <?php
 
-namespace Uxmal\AwsCICD\Command;
+namespace Uxmal\AwsCICD\Command\Docker;
 
 use Illuminate\Console\Command;
 use InvalidArgumentException;
@@ -32,7 +32,7 @@ class ComposeBuildCommand extends Command
      * ? --push-ecr=tag
      *
      */
-    protected $name = 'aws-cicd:compose-build';
+    protected $name = 'docker:compose-build';
 
     public function handle(): void
     {
@@ -96,6 +96,12 @@ class ComposeBuildCommand extends Command
                 $this->runCmd(['bash', '-c', "cp -r $pathRepositoryToCopy $appBuildDir/$pathRepositoryToCopy"]);
             }
         }
+
+        $cmd = "sed -i 's/\"symlink\": true/\"symlink\": false/g' $appBuildDir/composer.json";
+        if( $debug ){
+            $this->info("Running Command [bash -c '$cmd']");
+        }
+        $this->runCmd(['bash', '-c', $cmd]);
 
         if( $debug ){
             $this->info("Running Comand [bash -c 'cd $appBuildDir && composer install --no-dev --optimize-autoloader --no-interaction --no-progress --no-scripts --prefer-dist --no-cache']");
@@ -204,6 +210,7 @@ class ComposeBuildCommand extends Command
             $this->info("Running Command [bash -c '$cmd']");
         }
         $this->runCmd(['bash', '-c', $cmd], $envsubstVars);
+
     }
 
 }
