@@ -1,8 +1,8 @@
 {
-  "name": "uxmal/aws-cicd",
+  "name": "uxmaltech/devtools",
   "description": "Tool designed to streamline and optimize the implementation of Continuous Integration and Continuous Deployment (CI/CD) processes in the Amazon Web Services (AWS) environment",
   "type": "library",
-  "license": "LGPL",
+  "license": "proprietary",
   "autoload": {
     "psr-4": {
       "Uxmal\\AwsCICD\\": "src/"
