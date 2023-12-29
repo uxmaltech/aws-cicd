@@ -1,0 +1,42 @@
+{
+  "name": "uxmal/aws-cicd",
+  "description": "Tool designed to streamline and optimize the implementation of Continuous Integration and Continuous Deployment (CI/CD) processes in the Amazon Web Services (AWS) environment",
+  "type": "library",
+  "license": "LGPL",
+  "autoload": {
+    "psr-4": {
+      "Uxmal\\AwsCICD\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Enrique Martinez",
+      "email": "enmaca@hotmail.com"
+    }
+  ],
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.x-dev"
+    },
+    "laravel": {
+      "providers": [
+        "Uxmal\\AwsCICD\\AwsCICDServiceProvider"
+      ]
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require-dev": {
+    "laravel/pint": "^1.0",
+    "orchestra/testbench": "^7.0|^8.0|^9.0",
+    "phpstan/phpstan": "^1.10"
+  },
+  "require": {
+    "php": "^8.2",
+    "illuminate/console": "^9.0|^10.0|^11.0",
+    "illuminate/contracts": "^9.0|^10.0|^11.0",
+    "illuminate/support": "^9.0|^10.0|^11.0",
+    "symfony/yaml": "^6.0|^7.0",
+    "mcstreetguy/composer-parser": "^1.0"
+  }
+}
