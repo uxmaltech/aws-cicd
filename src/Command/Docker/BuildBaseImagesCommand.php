@@ -1,12 +1,12 @@
 <?php
 
-namespace Uxmal\AwsCICD\Command;
+namespace Uxmal\AwsCICD\Command\Docker;
 
 use Illuminate\Console\Command;
 use JetBrains\PhpStorm\NoReturn;
 use Uxmal\AwsCICD\Traits\ProcessUtils;
 
-class BuildBaseDockerImagesCommand extends Command
+class BuildBaseImagesCommand extends Command
 {
     use ProcessUtils;
 
@@ -15,7 +15,7 @@ class BuildBaseDockerImagesCommand extends Command
      *
      * @var string
      */
-    protected $name = 'aws-cicd:build-base-images';
+    protected $name = 'docker:build-base-images';
 
     /**
      * The console command description.

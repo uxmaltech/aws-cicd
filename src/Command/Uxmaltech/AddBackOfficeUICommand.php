@@ -1,6 +1,6 @@
 <?php
 
-namespace Uxmal\AwsCICD\Command;
+namespace Uxmal\AwsCICD\Command\Uxmaltech;
 
 use Illuminate\Console\Command;
 use JetBrains\PhpStorm\NoReturn;
