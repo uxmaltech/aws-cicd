@@ -1,0 +1,15 @@
+# Use Alpine Linux
+FROM ${NGINX_BASE_REPOSITORY_TAG}
+
+# Declare maintainer
+LABEL \
+    version="${APP_TAG}" \
+    Maintainer="${APP_AUTHOR} <${APP_EMAIL}>" \
+    Description="${APP_NAME}:nginx:${APP_TAG}"
+
+# Install dependencies
+COPY docker-images/build/docker/conf/nginx.conf /etc/nginx/nginx.conf
+RUN mkdir -p /www/public
+ADD docker-images/build/${APP_NAME}/public /www/public/
+
+EXPOSE ${NGINX_SERVICE_PORT}

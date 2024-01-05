@@ -1,0 +1,46 @@
+{
+  "family": "@app.prefix@-@app.name@-php-fpm-ecs-task",
+  "containerDefinitions": [
+    {
+      "name": "@app.prefix@-@app.name@-php-fpm-ecs-cntr",
+      "image": "@ecr.php-fpm.image@:@ecr.php-fpm.tag@",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "name": "php-fastcgi",
+          "containerPort": 9000,
+          "hostPort": 9000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "WORKSHOP_NAME",
+          "value": "WORKSHOP_PHP_DATA"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-create-group": "true",
+          "awslogs-group": "/ecs/@app.prefix@-@app.name@-php-fpm-ecs-task",
+          "awslogs-region": "@aws.region@",
+          "awslogs-stream-prefix": "ecs"
+        },
+        "secretOptions": []
+      }
+    }
+  ],
+  "executionRoleArn": "arn:aws:iam::707660622854:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  }
+}
