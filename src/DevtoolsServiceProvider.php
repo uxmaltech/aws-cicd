@@ -57,7 +57,6 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
                 ECRPushToRepositoryCommand::class,
                 ECRListRepositoriesCommand::class,
                 ECRDockerLoginCommand::class,
-                Route53CreateDomainsCommand::class,
                 CreateInfrastructureCommand::class,
             ]);
         }
