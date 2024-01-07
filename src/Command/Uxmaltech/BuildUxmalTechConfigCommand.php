@@ -49,9 +49,9 @@ class BuildUxmalTechConfigCommand extends Command
                 exit(1);
             }
         } catch (ProcessFailedException $exception) {
-            $this->warn('An error occurred: ' . $exception->getMessage());
+            $this->warn('An error occurred: '.$exception->getMessage());
         } catch (RandomException $e) {
-            $this->warn('An error occurred: ' . $e->getMessage());
+            $this->warn('An error occurred: '.$e->getMessage());
         }
         system('clear');
         $this->buildUxmalTech();
@@ -84,7 +84,7 @@ class BuildUxmalTechConfigCommand extends Command
                 $app_mode_template = __DIR__.'/Stubs/tmpl-artisan-php.php';
                 $docker_template = __DIR__.'/Stubs/tmpl-artisan-php-fpm-docker.php';
                 $app_mode = 'artisan-php';
-                $service_ports = config('uxmaltech.service_ports', []);;
+                $service_ports = config('uxmaltech.service_ports', []);
                 break;
             default:
                 $this->error('Opción no implementada');
@@ -93,7 +93,6 @@ class BuildUxmalTechConfigCommand extends Command
 
         $this->line('<info>Creando configuración para</info> [<comment>'.$app_mode_type.'</comment>]:');
         $this->newLine();
-
 
         $app_name = $this->ask('Nombre de la aplicación', config('uxmaltech.name', config('app.name')));
         $app_domain = $this->ask('Dominio de la aplicación', config('uxmaltech.domain', parse_url(config('app.url'), PHP_URL_HOST)));
@@ -127,7 +126,6 @@ class BuildUxmalTechConfigCommand extends Command
             $this->error('Abortando...');
             exit(1);
         }
-
 
         $search = [
             '@app.name@',

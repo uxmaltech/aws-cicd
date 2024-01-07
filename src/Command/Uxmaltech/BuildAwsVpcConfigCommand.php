@@ -4,7 +4,6 @@ namespace Uxmal\Devtools\Command\Uxmaltech;
 
 use Illuminate\Console\Command;
 use Symfony\Component\Process\Exception\ProcessFailedException;
-use Uxmal\Devtools\Enum\InfraTypeEnum;
 use Uxmal\Devtools\Enum\VpcTypeEnum;
 use Uxmal\Devtools\Traits\GeneralUtils;
 
@@ -16,7 +15,6 @@ class BuildAwsVpcConfigCommand extends Command
      * The console command name.
      *
      * @var string
-     *
      */
     protected $signature = 'devtools:build-aws-vpc-config';
 
@@ -33,7 +31,7 @@ class BuildAwsVpcConfigCommand extends Command
                 exit(1);
             }
         } catch (ProcessFailedException $exception) {
-            $this->warn('An error occurred: ' . $exception->getMessage());
+            $this->warn('An error occurred: '.$exception->getMessage());
         }
         system('clear');
         $this->buildAwsVpcConfig();
@@ -65,13 +63,11 @@ class BuildAwsVpcConfigCommand extends Command
         $app_vpc_netmask = $this->ask('Máscara de red de la VPC', 20);
         $app_vpc_subnet_netmask = $this->ask('Máscara para segementación de subredes', 25);
 
-
-
         $headers = ['Variable', 'Valor'];
         $variablesTable = [
             ['vpc_network', $app_vpc_network],
             ['vpc_netmask', $app_vpc_netmask],
-            ['vpc_subnet_netmask', $app_vpc_subnet_netmask]
+            ['vpc_subnet_netmask', $app_vpc_subnet_netmask],
         ];
 
         $this->table($headers, $variablesTable);

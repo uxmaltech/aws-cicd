@@ -101,26 +101,26 @@ class CreateInfrastructureCommand extends AWSCommand
             ['Name', config('aws-infra.app.name')],
             ['Prefix', config('aws-infra.app.prefix')],
             ['Key', config('aws-infra.app.key')],
-            ['Host', config('aws-infra.app.subdomain') . '.' . config('aws-infra.app.domain')],
+            ['Host', config('aws-infra.app.subdomain').'.'.config('aws-infra.app.domain')],
             ['VPC Network', config('aws-infra.app.vpc_network')],
             ['VPC Netmask', config('aws-infra.app.vpc_netmask')],
             ['VPC Subnet Netmask', config('aws-infra.app.vpc_subnet_netmask')],
             ['VPC Name', config('aws-infra.vpc.name')],
             ['VPC CIDR', config('aws-infra.vpc.cidr')],
             ['VPC Internet Gateway Name', config('aws-infra.vpc.internet_gateway.name')],
-            ['VPC Subnet Private AWZ AZ1', config('aws-infra.vpc.subnets.private-awz-az1.access_type') . ', ' . config('aws-infra.vpc.subnets.private-awz-az1.cidr') . ' [' . config('aws-infra.vpc.subnets.private-awz-az1.id') . ']'],
-            ['VPC Subnet Private AWZ AZ2', config('aws-infra.vpc.subnets.private-awz-az2.access_type') . ', ' . config('aws-infra.vpc.subnets.private-awz-az2.cidr') . ' [' . config('aws-infra.vpc.subnets.private-awz-az2.id') . ']'],
-            ['VPC Subnet Public AWZ AZ1', config('aws-infra.vpc.subnets.public-aws-az1.access_type') . ', ' . config('aws-infra.vpc.subnets.public-aws-az1.cidr') . ' [' . config('aws-infra.vpc.subnets.public-aws-az1.id') . ']'],
-            ['VPC Subnet Public AWZ AZ2', config('aws-infra.vpc.subnets.public-aws-az2.access_type') . ', ' . config('aws-infra.vpc.subnets.public-aws-az2.cidr') . ' [' . config('aws-infra.vpc.subnets.public-aws-az2.id') . ']'],
-            ['VPC Subnet NAT AWZ AZ1', config('aws-infra.vpc.subnets.nat-aws-az1.access_type') . ', ' . config('aws-infra.vpc.subnets.nat-aws-az1.cidr') . ' [' . config('aws-infra.vpc.subnets.nat-aws-az1.id') . ']'],
-            ['VPC Subnet NAT AWZ AZ2', config('aws-infra.vpc.subnets.nat-aws-az2.access_type') . ', ' . config('aws-infra.vpc.subnets.nat-aws-az2.cidr') . ' [' . config('aws-infra.vpc.subnets.nat-aws-az2.id') . ']'],
+            ['VPC Subnet Private AWZ AZ1', config('aws-infra.vpc.subnets.private-awz-az1.access_type').', '.config('aws-infra.vpc.subnets.private-awz-az1.cidr').' ['.config('aws-infra.vpc.subnets.private-awz-az1.id').']'],
+            ['VPC Subnet Private AWZ AZ2', config('aws-infra.vpc.subnets.private-awz-az2.access_type').', '.config('aws-infra.vpc.subnets.private-awz-az2.cidr').' ['.config('aws-infra.vpc.subnets.private-awz-az2.id').']'],
+            ['VPC Subnet Public AWZ AZ1', config('aws-infra.vpc.subnets.public-aws-az1.access_type').', '.config('aws-infra.vpc.subnets.public-aws-az1.cidr').' ['.config('aws-infra.vpc.subnets.public-aws-az1.id').']'],
+            ['VPC Subnet Public AWZ AZ2', config('aws-infra.vpc.subnets.public-aws-az2.access_type').', '.config('aws-infra.vpc.subnets.public-aws-az2.cidr').' ['.config('aws-infra.vpc.subnets.public-aws-az2.id').']'],
+            ['VPC Subnet NAT AWZ AZ1', config('aws-infra.vpc.subnets.nat-aws-az1.access_type').', '.config('aws-infra.vpc.subnets.nat-aws-az1.cidr').' ['.config('aws-infra.vpc.subnets.nat-aws-az1.id').']'],
+            ['VPC Subnet NAT AWZ AZ2', config('aws-infra.vpc.subnets.nat-aws-az2.access_type').', '.config('aws-infra.vpc.subnets.nat-aws-az2.cidr').' ['.config('aws-infra.vpc.subnets.nat-aws-az2.id').']'],
             ['Route53 external domain', config('aws-infra.route53.external_hosted_zone.name')],
             ['Route53 internal domain', config('aws-infra.route53.internal_hosted_zone.name')],
             ['ECS Cluster Name', config('aws-infra.ecs.cluster.name')],
         ];
         $this->table($headers, $envTable);
 
-        if (!$this->confirm('¿Es correcto, proceder a la creación en AWS?')) {
+        if (! $this->confirm('¿Es correcto, proceder a la creación en AWS?')) {
             $this->error('Abortando...');
             exit(1);
         }
@@ -141,9 +141,9 @@ class CreateInfrastructureCommand extends AWSCommand
         // Create/Check Internet Gateway
         $this->processIGW();
 
-        $this->routeTableMainName = $this->appPrefix . '-main';
-        $this->routeTablePublicIGWName = $this->appPrefix . '-public-igw';
-        $this->routeTablePublicNatName = $this->appPrefix . '-public-nat';
+        $this->routeTableMainName = $this->appPrefix.'-main';
+        $this->routeTablePublicIGWName = $this->appPrefix.'-public-igw';
+        $this->routeTablePublicNatName = $this->appPrefix.'-public-nat';
 
         $this->subnets = config('aws-infra.vpc.subnets');
 
@@ -152,16 +152,16 @@ class CreateInfrastructureCommand extends AWSCommand
 
         exit(0);
 
-        if (!array_key_exists($this->routeTableMainName, $this->routeTables) || !array_key_exists($this->routeTablePublicIGWName, $this->routeTables)) {
+        if (! array_key_exists($this->routeTableMainName, $this->routeTables) || ! array_key_exists($this->routeTablePublicIGWName, $this->routeTables)) {
             $this->error('No private or public route table found, please check your VPC configuration');
             exit(1);
         }
 
-        if (!$this->isInternetGatewayRouteOnRouteTable($this->routeTables[$this->routeTablePublicIGWName], $this->igwId)) {
+        if (! $this->isInternetGatewayRouteOnRouteTable($this->routeTables[$this->routeTablePublicIGWName], $this->igwId)) {
             $this->error('No IGW route found on public route table, please check your VPC configuration');
             exit(1);
         } else {
-            $this->info('IGW [' . $this->igwId . ']route attached on public route table [' . $this->routeTables[$this->routeTablePublicIGWName] . ']');
+            $this->info('IGW ['.$this->igwId.']route attached on public route table ['.$this->routeTables[$this->routeTablePublicIGWName].']');
         }
 
         // Create/Check Subnets
@@ -186,33 +186,33 @@ class CreateInfrastructureCommand extends AWSCommand
 
         $domains = $this->route53GetDomains();
         foreach ($domains as $domain) {
-            if ($domain['Name'] === $this->externalDomainName . '.') {
+            if ($domain['Name'] === $this->externalDomainName.'.') {
                 if ($this->externalDomainId !== $domain['Id']) {
                     $this->replaceConfigKey('route53.external_hosted_zone.id', $domain['Id'], true, $this->awsInfraConfigFile);
-                    $this->warn('External Domain ID (Changed): [' . $domain['Id'] . '] ' . $this->externalDomainName . ' found');
+                    $this->warn('External Domain ID (Changed): ['.$domain['Id'].'] '.$this->externalDomainName.' found');
                 } else {
-                    $this->info('External Domain ID: [' . $domain['Id'] . '] ' . $this->externalDomainName . ' found');
+                    $this->info('External Domain ID: ['.$domain['Id'].'] '.$this->externalDomainName.' found');
                 }
 
             }
-            if ($domain['Name'] === $this->internalDomainName . '.') {
+            if ($domain['Name'] === $this->internalDomainName.'.') {
                 if ($this->internalDomainId !== $domain['Id']) {
                     $this->replaceConfigKey('route53.internal_hosted_zone.id', $domain['Id'], true, $this->awsInfraConfigFile);
-                    $this->info('Internal Domain ID (Changed): ' . $domain['Id'] . ' ' . $this->internalDomainName . ' found');
+                    $this->info('Internal Domain ID (Changed): '.$domain['Id'].' '.$this->internalDomainName.' found');
                 } else {
-                    $this->info('Internal Domain ID: ' . $domain['Id'] . ' ' . $this->internalDomainName . ' found');
+                    $this->info('Internal Domain ID: '.$domain['Id'].' '.$this->internalDomainName.' found');
                 }
             }
         }
-        if (empty($this->externalDomainId) && !empty($this->externalDomainName)) {
+        if (empty($this->externalDomainId) && ! empty($this->externalDomainName)) {
             $this->externalDomainId = $this->route53CreateDomain($this->externalDomainName);
             $this->replaceConfigKey('route53.external_hosted_zone.id', $this->externalDomainId, true, $this->awsInfraConfigFile);
-            $this->warn('External Domain ID (Created): [' . $this->externalDomainId . '] ' . $this->externalDomainName . ' found');
+            $this->warn('External Domain ID (Created): ['.$this->externalDomainId.'] '.$this->externalDomainName.' found');
         }
-        if (empty($this->internalDomainId) && !empty($this->internalDomainName)) {
+        if (empty($this->internalDomainId) && ! empty($this->internalDomainName)) {
             $this->internalDomainId = $this->route53CreateDomain($this->internalDomainName, true, $this->vpcId);
             $this->replaceConfigKey('route53.internal_hosted_zone.id', $this->internalDomainId, true, $this->awsInfraConfigFile);
-            $this->info('Internal Domain ID (Created): [' . $this->internalDomainId . '] ' . $this->internalDomainName . ' found');
+            $this->info('Internal Domain ID (Created): ['.$this->internalDomainId.'] '.$this->internalDomainName.' found');
         }
     }
 
@@ -220,8 +220,8 @@ class CreateInfrastructureCommand extends AWSCommand
     {
         $this->ecsClusterArn = config('aws-infra.ecs.cluster.arn');
         $this->ecsClusterName = config('aws-infra.ecs.cluster.name');
-        if (!empty($this->ecsClusterArn)) {
-            if (!$this->ecsClusterExists($this->ecsClusterArn)) {
+        if (! empty($this->ecsClusterArn)) {
+            if (! $this->ecsClusterExists($this->ecsClusterArn)) {
                 $this->warn('ECS Cluster not found, please check your VPC configuration');
                 $this->ecsClusterArn = null;
             }
@@ -238,7 +238,7 @@ class CreateInfrastructureCommand extends AWSCommand
         }
 
         if ($this->ecsClusterExists($this->ecsClusterArn)) {
-            $this->info('ECS Cluster ID: ' . $this->ecsClusterArn . ' created');
+            $this->info('ECS Cluster ID: '.$this->ecsClusterArn.' created');
         }
     }
 
@@ -248,23 +248,23 @@ class CreateInfrastructureCommand extends AWSCommand
          * Build Subnets
          */
         foreach ($this->subnets as $subnet_name => &$subnet_data) {
-            if (!empty($subnet_data['id'])) {
-                if (!$this->subnetExists($subnet_data['id'])) {
-                    $this->warn('Subnet found, but not in AWS, creating [' . $subnet_name . '] => ' . $subnet_data['id']);
+            if (! empty($subnet_data['id'])) {
+                if (! $this->subnetExists($subnet_data['id'])) {
+                    $this->warn('Subnet found, but not in AWS, creating ['.$subnet_name.'] => '.$subnet_data['id']);
                     $subnet_data['id'] = null;
                 }
             } else {
-                $this->info('Subnet not found, creating [' . $subnet_name . ']');
+                $this->info('Subnet not found, creating ['.$subnet_name.']');
                 $result = $this->createSubnet($this->vpcId, $subnet_data['cidr'], $subnet_name);
                 $subnet_data['id'] = $result['Subnet']['SubnetId'];
-                $this->replaceConfigKey('vpc.subnets.' . $subnet_name . '.id', $subnet_data['id'], true, $this->awsInfraConfigFile);
+                $this->replaceConfigKey('vpc.subnets.'.$subnet_name.'.id', $subnet_data['id'], true, $this->awsInfraConfigFile);
             }
 
             switch ($subnet_data['access_type']) {
                 case 'public-igw':
                     if (empty($subnet_data['id'])) {
                         $subnet_data['id'] = $this->createSubnet($this->vpcId, $subnet_data['cidr'], $subnet_name)['Subnet']['SubnetId'];
-                        $this->replaceConfigKey('vpc.subnets.' . $subnet_name . '.id', $subnet_data['id'], true, $this->awsInfraConfigFile);
+                        $this->replaceConfigKey('vpc.subnets.'.$subnet_name.'.id', $subnet_data['id'], true, $this->awsInfraConfigFile);
                     }
                     $currentRouteTableId = $this->getSubnetAssociationKey($subnet_data['id'], 'RouteTableId');
                     if ($currentRouteTableId !== $this->routeTables[$this->routeTablePublicIGWName]) {
@@ -279,7 +279,7 @@ class CreateInfrastructureCommand extends AWSCommand
                     $this->info('Subnet is public-nat, checking it...');
                     if (empty($subnet_data['id'])) {
                         $subnet_data['id'] = $this->createSubnet($this->vpcId, $subnet_data['cidr'], $subnet_name)['Subnet']['SubnetId'];
-                        $this->replaceConfigKey('vpc.subnets.' . $subnet_name . '.id', $subnet_data['id'], true, $this->awsInfraConfigFile);
+                        $this->replaceConfigKey('vpc.subnets.'.$subnet_name.'.id', $subnet_data['id'], true, $this->awsInfraConfigFile);
                     }
 
                     /** Check if public-nat routeTable, exists if not create!*/
@@ -300,7 +300,7 @@ class CreateInfrastructureCommand extends AWSCommand
                     }
 
                     /** Check if public-nat routeTable, has NATGw Attached */
-                    if (!$this->isNatGwRouteOnRouteTable($this->routeTables[$this->routeTablePublicNatName], $nat_gateway_id)) {
+                    if (! $this->isNatGwRouteOnRouteTable($this->routeTables[$this->routeTablePublicNatName], $nat_gateway_id)) {
                         $this->addRouteToRouteTable($this->routeTables[$this->routeTablePublicNatName], '0.0.0.0/0', $nat_gateway_id);
                         $this->waitUntilTrue(function () use ($nat_gateway_id) {
                             $this->warn('Waiting for NAT Gateway Route to be available...');
@@ -314,7 +314,7 @@ class CreateInfrastructureCommand extends AWSCommand
                     if (empty($subnet_data['id'])) {
                         $this->error('Subnet is private, but no ID found, please check your VPC configuration');
                         $subnet_data['id'] = $this->createSubnet($this->vpcId, $subnet_data['cidr'], $subnet_name)['Subnet']['SubnetId'];
-                        $this->replaceConfigKey('vpc.subnets.' . $subnet_name . '.id', $subnet_data['id'], true, $this->awsInfraConfigFile);
+                        $this->replaceConfigKey('vpc.subnets.'.$subnet_name.'.id', $subnet_data['id'], true, $this->awsInfraConfigFile);
                     }
                     break;
             }
@@ -324,26 +324,26 @@ class CreateInfrastructureCommand extends AWSCommand
 
     private function subnetCheckIfExistsOrCreate(array $subnet_data)
     {
-        if (!array_key_exists('key', $subnet_data) || empty($subnet_data['key'])) {
+        if (! array_key_exists('key', $subnet_data) || empty($subnet_data['key'])) {
             $this->error('EL parametro key es obligatorio para la subnet');
             exit(1);
         }
         $availability_zones = $this->getAvailabilityZones();
 
-        if (!empty($subnet_data['id'] && !$this->subnetExists($subnet_data['id']))) {
-            $this->warn('Subnet found, but not in AWS, creating [' . $subnet_data['name'] . '] => ' . $subnet_data['id']);
+        if (! empty($subnet_data['id'] && ! $this->subnetExists($subnet_data['id']))) {
+            $this->warn('Subnet found, but not in AWS, creating ['.$subnet_data['name'].'] => '.$subnet_data['id']);
             $subnet_data['id'] = null;
         }
 
         if (empty($subnet_data['id'])) {
-            $this->warn('Subnet not exists, creating [' . $subnet_data['name'] . ']');
+            $this->warn('Subnet not exists, creating ['.$subnet_data['name'].']');
             $az = substr($subnet_data['key'], -3, 3);
-            if (!isset($availability_zones[$az])) {
-                $this->error('AZ not found, please check your VPC configuration [' . $az . ']');
+            if (! isset($availability_zones[$az])) {
+                $this->error('AZ not found, please check your VPC configuration ['.$az.']');
                 exit(1);
             }
             $result = $this->createSubnet($this->vpcId, $subnet_data['cidr'], $subnet_data['name'], $availability_zones[$az]);
-            $this->replaceConfigKey('vpc.subnets.' . $subnet_data['key'] . '.id', $result['Subnet']['SubnetId'], true, $this->awsInfraConfigFile);
+            $this->replaceConfigKey('vpc.subnets.'.$subnet_data['key'].'.id', $result['Subnet']['SubnetId'], true, $this->awsInfraConfigFile);
             $subnet_data['id'] = $result['Subnet']['SubnetId'];
         }
 
@@ -384,37 +384,37 @@ class CreateInfrastructureCommand extends AWSCommand
 
         if ($nat_gateways) {
             foreach ($nat_gateways as $natgw_name => $natgw_data) {
-                if( !empty($natgw_data['elastic_ip']) && !$this->elasticIpExists($natgw_data['elastic_ip'])) {
-                    $this->warn('Elastic IP not found, creating [elip-' . $natgw_name . ']');
+                if (! empty($natgw_data['elastic_ip']) && ! $this->elasticIpExists($natgw_data['elastic_ip'])) {
+                    $this->warn('Elastic IP not found, creating [elip-'.$natgw_name.']');
                     $natgw_data['elastic_ip'] = null;
                 }
 
-                if( empty($natgw_data['elastic_ip']) ) {
-                    $natgw_data['elastic_ip'] = $this->createEipAlloc('elip-' . $natgw_name);
+                if (empty($natgw_data['elastic_ip'])) {
+                    $natgw_data['elastic_ip'] = $this->createEipAlloc('elip-'.$natgw_name);
                     $this->waitUntilTrue(function () use ($natgw_data) {
                         $this->warn('Waiting for Elastic IP to be available...');
+
                         return $this->elasticIpExists($natgw_data['elastic_ip']);
                     });
-                    $this->replaceConfigKey('vpc.nat_gateways.' . $natgw_name . '.elastic_ip', $natgw_data['elastic_ip'], true, $this->awsInfraConfigFile);
+                    $this->replaceConfigKey('vpc.nat_gateways.'.$natgw_name.'.elastic_ip', $natgw_data['elastic_ip'], true, $this->awsInfraConfigFile);
                 }
 
-                $this->info('Elastic IP [' . $natgw_data['elastic_ip'] . ']  --OK--');
+                $this->info('Elastic IP ['.$natgw_data['elastic_ip'].']  --OK--');
 
-
-                if (!empty($natgw_data['id'])) {
-                    if (!$this->internetNatGatewayExists($natgw_data['id'])) {
-                        $this->warn('NAT Gateway found, but not in AWS, creating [' . $natgw_data['id'] . ']');
+                if (! empty($natgw_data['id'])) {
+                    if (! $this->internetNatGatewayExists($natgw_data['id'])) {
+                        $this->warn('NAT Gateway found, but not in AWS, creating ['.$natgw_data['id'].']');
                         $natgw_data['id'] = null;
                     }
                 }
 
                 if (empty($natgw_data['id'])) {
-                    $this->info('NAT Gateway not found, creating [' . $natgw_name . ']');
+                    $this->info('NAT Gateway not found, creating ['.$natgw_name.']');
                     $subnet_data = $this->subnets[$natgw_data['subnet_key']] + ['key' => $natgw_data['subnet_key']];
                     $subnet_data['id'] = $this->subnetCheckIfExistsOrCreate($subnet_data);
 
                     if (empty($subnet_data['id'])) {
-                        $this->error('Subnet not found, please check your VPC configuration ' . __FILE__ . ':' . __LINE__);
+                        $this->error('Subnet not found, please check your VPC configuration '.__FILE__.':'.__LINE__);
                         exit(1);
                     }
 
@@ -424,13 +424,12 @@ class CreateInfrastructureCommand extends AWSCommand
 
                         return $this->internetNatGatewayExists($natgw_data['id']);
                     });
-                    $this->replaceConfigKey('vpc.nat_gateways.' . $natgw_name . '.id', $natgw_data['id'], true, $this->awsInfraConfigFile);
+                    $this->replaceConfigKey('vpc.nat_gateways.'.$natgw_name.'.id', $natgw_data['id'], true, $this->awsInfraConfigFile);
                 }
 
-                $this->info('NAT Gateway [' . $natgw_data['id'] . ']  --OK--');
+                $this->info('NAT Gateway ['.$natgw_data['id'].']  --OK--');
             }
         }
-
 
         /********* nat subnets *********
          * /*******************************/
@@ -438,15 +437,15 @@ class CreateInfrastructureCommand extends AWSCommand
             /**
              * Check if subnetExists if not create.
              */
-            if (!$this->subnetExists($subnet['id']) || empty($subnet['id'])) {
-                $this->info('Subnet not found, creating [' . $subnet['name'] . ']');
+            if (! $this->subnetExists($subnet['id']) || empty($subnet['id'])) {
+                $this->info('Subnet not found, creating ['.$subnet['name'].']');
                 $az = substr($subnet['key'], -3, 3);
-                if (!isset($availability_zones[$az])) {
-                    $this->error('AZ not found, please check your VPC configuration [' . $az . ']');
+                if (! isset($availability_zones[$az])) {
+                    $this->error('AZ not found, please check your VPC configuration ['.$az.']');
                     exit(1);
                 }
                 $result = $this->createSubnet($this->vpcId, $subnet['cidr'], $subnet['name'], $availability_zones[$az]);
-                $this->replaceConfigKey('vpc.subnets.' . $subnet['key'] . '.id', $result['Subnet']['SubnetId'], true, $this->awsInfraConfigFile);
+                $this->replaceConfigKey('vpc.subnets.'.$subnet['key'].'.id', $result['Subnet']['SubnetId'], true, $this->awsInfraConfigFile);
                 $subnet['id'] = $result['Subnet']['SubnetId'];
             }
 
@@ -457,28 +456,28 @@ class CreateInfrastructureCommand extends AWSCommand
             $currentAttachedRouteTableId = $this->getSubnetAssociationKey($subnet['id'], 'RouteTableId');
             $currentVPCRouteTableId = $routeTablesInVpc[$subnet['key']] ?? null;
 
-            if (!empty($configRouteTableId)) {
-                $this->warn('Route Table ID found in config file, checking if exists [' . $configRouteTableId . ']');
-                if (!$this->routeTableExists($configRouteTableId)) {
-                    $this->warn('Route Table not found, reseting [' . $configRouteTableId . ']');
+            if (! empty($configRouteTableId)) {
+                $this->warn('Route Table ID found in config file, checking if exists ['.$configRouteTableId.']');
+                if (! $this->routeTableExists($configRouteTableId)) {
+                    $this->warn('Route Table not found, reseting ['.$configRouteTableId.']');
                     $configRouteTableId = null;
                 }
             }
 
             /** Check Route Table attached to subnet */
-            if (!empty($currentAttachedRouteTableId) && empty($configRouteTableId)) {
-                $this->warn('Route Table ID found attached to subnet [' . $currentAttachedRouteTableId . '], but not found in config file');
-                $this->replaceConfigKey('vpc.subnets.' . $subnet['key'] . '.route-table-id', $currentAttachedRouteTableId, true, $this->awsInfraConfigFile);
+            if (! empty($currentAttachedRouteTableId) && empty($configRouteTableId)) {
+                $this->warn('Route Table ID found attached to subnet ['.$currentAttachedRouteTableId.'], but not found in config file');
+                $this->replaceConfigKey('vpc.subnets.'.$subnet['key'].'.route-table-id', $currentAttachedRouteTableId, true, $this->awsInfraConfigFile);
                 $configRouteTableId = $currentAttachedRouteTableId;
             }
 
             /** Check Route Table with VPC Routes Classified by name */
-            if (!empty($currentVPCRouteTableId)) {
+            if (! empty($currentVPCRouteTableId)) {
                 if ($currentVPCRouteTableId != $configRouteTableId) {
-                    $this->warn('Route Table ID found in config file [' . $configRouteTableId . '], but differs for VPC routeTablesExists [' . $currentVPCRouteTableId . ']');
+                    $this->warn('Route Table ID found in config file ['.$configRouteTableId.'], but differs for VPC routeTablesExists ['.$currentVPCRouteTableId.']');
                 }
                 if ($currentVPCRouteTableId != $currentAttachedRouteTableId) {
-                    $this->warn('Route Table ID found in config file [' . $configRouteTableId . '], but differs for attached to subnet [' . $currentAttachedRouteTableId . ']');
+                    $this->warn('Route Table ID found in config file ['.$configRouteTableId.'], but differs for attached to subnet ['.$currentAttachedRouteTableId.']');
                 }
             }
 
@@ -486,14 +485,14 @@ class CreateInfrastructureCommand extends AWSCommand
              * Create a route table
              */
             if (empty($configRouteTableId)) {
-                $this->warn('Route Table not found, creating [' . $subnet['key'] . ']');
+                $this->warn('Route Table not found, creating ['.$subnet['key'].']');
                 $configRouteTableId = $this->createRouteTable($this->vpcId, $subnet['key']);
                 $this->waitUntilTrue(function () use ($configRouteTableId) {
                     $this->warn('Waiting for Route Table to be available...');
 
                     return $this->routeTableExists($configRouteTableId);
                 });
-                $this->replaceConfigKey('vpc.subnets.' . $subnet['key'] . '.route-table-id', $configRouteTableId, true, $this->awsInfraConfigFile);
+                $this->replaceConfigKey('vpc.subnets.'.$subnet['key'].'.route-table-id', $configRouteTableId, true, $this->awsInfraConfigFile);
                 $this->setRouteTableIdToSubnet($subnet['id'], $configRouteTableId);
             } else {
                 /**
@@ -505,7 +504,7 @@ class CreateInfrastructureCommand extends AWSCommand
                 }
 
                 if ($this->getSubnetAssociationKey($subnet['id'], 'RouteTableId') !== $routeTablesInVpc[$subnet['key']]) {
-                    $this->error('Route Table ID found in config file [' . $configRouteTableId . '], but differs for VPC routeTablesExists [' . $routeTablesInVpc[$subnet['key']] . ']');
+                    $this->error('Route Table ID found in config file ['.$configRouteTableId.'], but differs for VPC routeTablesExists ['.$routeTablesInVpc[$subnet['key']].']');
                     exit(1);
                 }
             }
@@ -514,25 +513,25 @@ class CreateInfrastructureCommand extends AWSCommand
             /**
              * Check if route table has NATGw Route Attached
              */
-            $nat_gateway_id = config('aws-infra.vpc.nat_gateways.' . $subnet['natgw_key'] . '.id');
-            if( empty($nat_gateway_id) ) {
-                $this->error('NAT Gateway ID not found, please check your VPC configuration ' . __FILE__ . ':' . __LINE__);
+            $nat_gateway_id = config('aws-infra.vpc.nat_gateways.'.$subnet['natgw_key'].'.id');
+            if (empty($nat_gateway_id)) {
+                $this->error('NAT Gateway ID not found, please check your VPC configuration '.__FILE__.':'.__LINE__);
                 exit(1);
             }
 
-            $this->warn('Nat Gateway Id: ' . $nat_gateway_id . ' created...');
+            $this->warn('Nat Gateway Id: '.$nat_gateway_id.' created...');
 
-            if (!$this->isNatGwRouteOnRouteTable($configRouteTableId, $nat_gateway_id)) {
+            if (! $this->isNatGwRouteOnRouteTable($configRouteTableId, $nat_gateway_id)) {
                 $this->addRouteToRouteTable($configRouteTableId, '0.0.0.0/0', $nat_gateway_id);
                 $this->waitUntilTrue(function () use ($configRouteTableId, $nat_gateway_id) {
-                    $this->warn('Waiting for route 0.0.0.0/0 Route to be added to ' . $configRouteTableId . ' routeTable...');
+                    $this->warn('Waiting for route 0.0.0.0/0 Route to be added to '.$configRouteTableId.' routeTable...');
 
                     return $this->isNatGwRouteOnRouteTable($configRouteTableId, $nat_gateway_id);
                 });
             }
 
             if ($this->subnetExists($subnet['id'])) {
-                $this->info('Subnet [' . $subnet['name'] . '] created ...');
+                $this->info('Subnet ['.$subnet['name'].'] created ...');
             }
 
         }
@@ -544,15 +543,15 @@ class CreateInfrastructureCommand extends AWSCommand
             /**
              * Check if subnetExists if not create.
              */
-            if (!$this->subnetExists($subnet['id']) || empty($subnet['id'])) {
-                $this->info('Subnet not found, creating [' . $subnet['name'] . ']');
+            if (! $this->subnetExists($subnet['id']) || empty($subnet['id'])) {
+                $this->info('Subnet not found, creating ['.$subnet['name'].']');
                 $az = substr($subnet['key'], -3, 3);
-                if (!isset($availability_zones[$az])) {
-                    $this->error('AZ not found, please check your VPC configuration [' . $az . ']');
+                if (! isset($availability_zones[$az])) {
+                    $this->error('AZ not found, please check your VPC configuration ['.$az.']');
                     exit(1);
                 }
                 $result = $this->createSubnet($this->vpcId, $subnet['cidr'], $subnet['name'], $availability_zones[$az]);
-                $this->replaceConfigKey('vpc.subnets.' . $subnet['key'] . '.id', $result['Subnet']['SubnetId'], true, $this->awsInfraConfigFile);
+                $this->replaceConfigKey('vpc.subnets.'.$subnet['key'].'.id', $result['Subnet']['SubnetId'], true, $this->awsInfraConfigFile);
                 $subnet['id'] = $result['Subnet']['SubnetId'];
             }
 
@@ -563,28 +562,28 @@ class CreateInfrastructureCommand extends AWSCommand
             $currentAttachedRouteTableId = $this->getSubnetAssociationKey($subnet['id'], 'RouteTableId');
             $currentVPCRouteTableId = $routeTablesInVpc[$subnet['key']] ?? null;
 
-            if (!empty($configRouteTableId)) {
-                $this->warn('Route Table ID found in config file, checking if exists [' . $configRouteTableId . ']');
-                if (!$this->routeTableExists($configRouteTableId)) {
-                    $this->warn('Route Table not found, reseting [' . $configRouteTableId . ']');
+            if (! empty($configRouteTableId)) {
+                $this->warn('Route Table ID found in config file, checking if exists ['.$configRouteTableId.']');
+                if (! $this->routeTableExists($configRouteTableId)) {
+                    $this->warn('Route Table not found, reseting ['.$configRouteTableId.']');
                     $configRouteTableId = null;
                 }
             }
 
             /** Check Route Table attached to subnet */
-            if (!empty($currentAttachedRouteTableId) && empty($configRouteTableId)) {
-                $this->warn('Route Table ID found attached to subnet [' . $currentAttachedRouteTableId . '], but not found in config file');
-                $this->replaceConfigKey('vpc.subnets.' . $subnet['key'] . '.route-table-id', $currentAttachedRouteTableId, true, $this->awsInfraConfigFile);
+            if (! empty($currentAttachedRouteTableId) && empty($configRouteTableId)) {
+                $this->warn('Route Table ID found attached to subnet ['.$currentAttachedRouteTableId.'], but not found in config file');
+                $this->replaceConfigKey('vpc.subnets.'.$subnet['key'].'.route-table-id', $currentAttachedRouteTableId, true, $this->awsInfraConfigFile);
                 $configRouteTableId = $currentAttachedRouteTableId;
             }
 
             /** Check Route Table with VPC Routes Classified by name */
-            if (!empty($currentVPCRouteTableId)) {
+            if (! empty($currentVPCRouteTableId)) {
                 if ($currentVPCRouteTableId != $configRouteTableId) {
-                    $this->warn('Route Table ID found in config file [' . $configRouteTableId . '], but differs for VPC routeTablesExists [' . $currentVPCRouteTableId . ']');
+                    $this->warn('Route Table ID found in config file ['.$configRouteTableId.'], but differs for VPC routeTablesExists ['.$currentVPCRouteTableId.']');
                 }
                 if ($currentVPCRouteTableId != $currentAttachedRouteTableId) {
-                    $this->warn('Route Table ID found in config file [' . $configRouteTableId . '], but differs for attached to subnet [' . $currentAttachedRouteTableId . ']');
+                    $this->warn('Route Table ID found in config file ['.$configRouteTableId.'], but differs for attached to subnet ['.$currentAttachedRouteTableId.']');
                 }
             }
 
@@ -592,7 +591,7 @@ class CreateInfrastructureCommand extends AWSCommand
              * Create a route table
              */
             if (empty($configRouteTableId)) {
-                $this->warn('Route Table not found, creating [' . $subnet['key'] . ']');
+                $this->warn('Route Table not found, creating ['.$subnet['key'].']');
                 $configRouteTableId = $this->createRouteTable($this->vpcId, $subnet['key']);
                 $this->waitUntilTrue(function () use ($configRouteTableId) {
                     $this->warn('Waiting for Route Table to be available...');
@@ -600,7 +599,7 @@ class CreateInfrastructureCommand extends AWSCommand
                     return $this->routeTableExists($configRouteTableId);
                 });
                 $this->setRouteTableIdToSubnet($subnet['id'], $configRouteTableId);
-                $this->replaceConfigKey('vpc.subnets.' . $subnet['key'] . '.route-table-id', $configRouteTableId, true, $this->awsInfraConfigFile);
+                $this->replaceConfigKey('vpc.subnets.'.$subnet['key'].'.route-table-id', $configRouteTableId, true, $this->awsInfraConfigFile);
             } else {
                 /**
                  * Check if routeTable has attached to subnet
@@ -611,7 +610,7 @@ class CreateInfrastructureCommand extends AWSCommand
                 }
 
                 if ($this->getSubnetAssociationKey($subnet['id'], 'RouteTableId') !== $routeTablesInVpc[$subnet['key']]) {
-                    $this->error('Subnet ' . $subnet['key'] . ' not attached to route table ' . $routeTablesInVpc[$subnet['key']]);
+                    $this->error('Subnet '.$subnet['key'].' not attached to route table '.$routeTablesInVpc[$subnet['key']]);
                     exit(1);
                 }
             }
@@ -620,7 +619,7 @@ class CreateInfrastructureCommand extends AWSCommand
             /*
              * Check if route table has IGW Route 0.0.0.0/0 created
              */
-            if (!$this->isInternetGatewayRouteOnRouteTable($configRouteTableId, $this->igwId)) {
+            if (! $this->isInternetGatewayRouteOnRouteTable($configRouteTableId, $this->igwId)) {
                 $this->addRouteToRouteTable($configRouteTableId, '0.0.0.0/0', $this->igwId);
                 $this->waitUntilTrue(function () use ($configRouteTableId) {
                     return $this->isInternetGatewayRouteOnRouteTable($configRouteTableId, $this->igwId);
@@ -637,15 +636,15 @@ class CreateInfrastructureCommand extends AWSCommand
             /**
              * Check if subnetExists if not create.
              */
-            if (!$this->subnetExists($subnet['id']) || empty($subnet['id'])) {
-                $this->info('Subnet not found, creating [' . $subnet['name'] . ']');
+            if (! $this->subnetExists($subnet['id']) || empty($subnet['id'])) {
+                $this->info('Subnet not found, creating ['.$subnet['name'].']');
                 $az = substr($subnet['key'], -3, 3);
-                if (!isset($availability_zones[$az])) {
-                    $this->error('AZ not found, please check your VPC configuration [' . $az . ']');
+                if (! isset($availability_zones[$az])) {
+                    $this->error('AZ not found, please check your VPC configuration ['.$az.']');
                     exit(1);
                 }
                 $result = $this->createSubnet($this->vpcId, $subnet['cidr'], $subnet['name'], $availability_zones[$az]);
-                $this->replaceConfigKey('vpc.subnets.' . $subnet['key'] . '.id', $result['Subnet']['SubnetId'], true, $this->awsInfraConfigFile);
+                $this->replaceConfigKey('vpc.subnets.'.$subnet['key'].'.id', $result['Subnet']['SubnetId'], true, $this->awsInfraConfigFile);
                 $subnet['id'] = $result['Subnet']['SubnetId'];
             }
         }
@@ -701,9 +700,9 @@ class CreateInfrastructureCommand extends AWSCommand
 
         $this->igwId = config('aws-infra.vpc.internet_gateway.id');
 
-        if (!empty($this->igwId)) {
-            if (!$this->internetGatewayExists($this->igwId)) {
-                $this->warn('Internet Gateway not found [' . $this->igwId . '] in AWS, creating...');
+        if (! empty($this->igwId)) {
+            if (! $this->internetGatewayExists($this->igwId)) {
+                $this->warn('Internet Gateway not found ['.$this->igwId.'] in AWS, creating...');
                 $this->igwId = null;
             }
         }
@@ -718,7 +717,7 @@ class CreateInfrastructureCommand extends AWSCommand
         }
 
         if ($this->internetGatewayExists($this->igwId)) {
-            $this->info('Internet Gateway ID: ' . $this->igwId . ' created');
+            $this->info('Internet Gateway ID: '.$this->igwId.' created');
         }
 
         $igw_attached = $this->isInternetGatewayAttachedToVpc($this->vpcId, $this->igwId);
@@ -737,9 +736,9 @@ class CreateInfrastructureCommand extends AWSCommand
     {
         $this->vpcId = config('aws-infra.vpc.id');
 
-        if (!empty($this->vpcId)) {
-            if (!$this->vpcExists($this->vpcId)) {
-                $this->warn('VPC ID: ' . $this->vpcId . ' not found in AWS, creating...');
+        if (! empty($this->vpcId)) {
+            if (! $this->vpcExists($this->vpcId)) {
+                $this->warn('VPC ID: '.$this->vpcId.' not found in AWS, creating...');
                 $this->vpcId = null;
             }
         }
@@ -757,7 +756,7 @@ class CreateInfrastructureCommand extends AWSCommand
         }
 
         if ($this->vpcExists($this->vpcId)) {
-            $this->info('VPC ID: ' . $this->vpcId . ' created');
+            $this->info('VPC ID: '.$this->vpcId.' created');
         }
     }
 }

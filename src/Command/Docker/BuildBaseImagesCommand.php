@@ -49,7 +49,7 @@ class BuildBaseImagesCommand extends Command
     #[NoReturn]
     protected function buildDockerImage(): void
     {
-        $this->line('Building the base docker image for ' . config('uxmaltech.name') . ' ...');
+        $this->line('Building the base docker image for '.config('uxmaltech.name').' ...');
         $this->newLine();
 
         $headers = ['Variable', 'Contenido'];
@@ -66,8 +66,8 @@ class BuildBaseImagesCommand extends Command
 
         $ecr_php_fpm = config('aws-ecr.php-fpm');
         if ($ecr_php_fpm) {
-            $ecr_php_fpm_versioned_tag = $prefix . '-php-fpm' . ':' . $this->ecrImageTag;
-            $ecr_php_fpm_repository = $ecr_proxy . '/' . $prefix . '-php-fpm';
+            $ecr_php_fpm_versioned_tag = $prefix.'-php-fpm'.':'.$this->ecrImageTag;
+            $ecr_php_fpm_repository = $ecr_proxy.'/'.$prefix.'-php-fpm';
             $ecr_php_fpm_base_image = $ecr_php_fpm['base-image'];
             $ecr_php_fpm_exposed_port = $ecr_php_fpm['exposed-port'];
 
@@ -81,8 +81,8 @@ class BuildBaseImagesCommand extends Command
 
         $ecr_nginx = config('aws-ecr.nginx');
         if ($ecr_nginx) {
-            $ecr_nginx_versioned_tag = 'uxtch-nginx' . ':' . $this->ecrImageTag;
-            $ecr_nginx_repository = $ecr_proxy . '/' . $prefix . '-nginx';
+            $ecr_nginx_versioned_tag = 'uxtch-nginx'.':'.$this->ecrImageTag;
+            $ecr_nginx_repository = $ecr_proxy.'/'.$prefix.'-nginx';
             $ecr_nginx_base_image = $ecr_nginx['base-image'];
             $ecr_nginx_exposed_port = $ecr_nginx['exposed-port'];
 
@@ -102,12 +102,10 @@ class BuildBaseImagesCommand extends Command
          * ['NGINX_BASE_IMAGE', $this->clusterContainerNginxBaseImage],
          * ['NGINX_BASE_TAG', $this->clusterContainerNginxTag],
          */
-
-
         $this->table($headers, $envTable);
 
         $this->newLine();
-        if (!$this->confirm('Do you wish to continue?', false)) {
+        if (! $this->confirm('Do you wish to continue?', false)) {
             $this->info('Bye!');
             exit(0);
         }
@@ -117,12 +115,12 @@ class BuildBaseImagesCommand extends Command
          */
         if ($ecr_php_fpm) {
             $workDir = $this->laravel->basePath('docker-images/base-images/uxtch-php-fpm/');
-            if (!is_dir($workDir)) {
-                $this->error("The directory docker-images/base-images/uxtch-php-fpm does not exists.");
+            if (! is_dir($workDir)) {
+                $this->error('The directory docker-images/base-images/uxtch-php-fpm does not exists.');
                 exit(1);
             }
-            $ecr_proxy_php_fpm_tag = $ecr_php_fpm_repository . ':' . $this->ecrImageTag;
-            $latest_php_fpm_tag = $ecr_php_fpm_repository . ':latest';
+            $ecr_proxy_php_fpm_tag = $ecr_php_fpm_repository.':'.$this->ecrImageTag;
+            $latest_php_fpm_tag = $ecr_php_fpm_repository.':latest';
             $this->runDockerCmd(['build', '.', '-t', $ecr_php_fpm_versioned_tag], $workDir);
             $this->runDockerCmd(['tag', $ecr_php_fpm_versioned_tag, $ecr_proxy_php_fpm_tag], $workDir);
             $this->runDockerCmd(['tag', $ecr_php_fpm_versioned_tag, $latest_php_fpm_tag], $workDir);
@@ -133,12 +131,12 @@ class BuildBaseImagesCommand extends Command
 
         if ($ecr_nginx) {
             $workDir = $this->laravel->basePath('docker-images/base-images/uxtch-nginx/');
-            if (!is_dir($workDir)) {
-                $this->error("The directory docker-images/base-images/uxtch-nginx does not exists.");
+            if (! is_dir($workDir)) {
+                $this->error('The directory docker-images/base-images/uxtch-nginx does not exists.');
                 exit(1);
             }
-            $ecr_proxy_nginx_tag = $ecr_nginx_repository . ':' . $this->ecrImageTag;
-            $latest_nginx_tag = $ecr_nginx_repository . ':latest';
+            $ecr_proxy_nginx_tag = $ecr_nginx_repository.':'.$this->ecrImageTag;
+            $latest_nginx_tag = $ecr_nginx_repository.':latest';
             $this->runDockerCmd(['build', '.', '-t', $ecr_nginx_versioned_tag], $workDir);
             $this->runDockerCmd(['tag', $ecr_nginx_versioned_tag, $ecr_proxy_nginx_tag], $workDir);
             $this->runDockerCmd(['tag', $ecr_nginx_versioned_tag, $latest_nginx_tag], $workDir);

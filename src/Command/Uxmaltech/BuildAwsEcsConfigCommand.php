@@ -14,7 +14,6 @@ class BuildAwsEcsConfigCommand extends Command
      * The console command name.
      *
      * @var string
-     *
      */
     protected $signature = 'devtools:build-aws-ecs-config';
 
@@ -31,7 +30,7 @@ class BuildAwsEcsConfigCommand extends Command
                 exit(1);
             }
         } catch (ProcessFailedException $exception) {
-            $this->warn('An error occurred: ' . $exception->getMessage());
+            $this->warn('An error occurred: '.$exception->getMessage());
         }
         system('clear');
         $this->buildAwsEcsConfig();

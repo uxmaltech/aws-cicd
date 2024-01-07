@@ -2,7 +2,6 @@
 
 namespace Uxmal\Devtools\Command\Docker;
 
-use Docker\Docker;
 use Illuminate\Console\Command;
 use Random\RandomException;
 use Uxmal\Devtools\Traits\GeneralUtils;
@@ -15,7 +14,6 @@ class ComposeUpCommand extends Command
      * The console command name.
      *
      * @var string
-     *
      */
     protected $signature = 'docker:compose-up';
 

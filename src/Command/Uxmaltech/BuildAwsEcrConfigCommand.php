@@ -15,7 +15,6 @@ class BuildAwsEcrConfigCommand extends Command
      * The console command name.
      *
      * @var string
-     *
      */
     protected $signature = 'devtools:build-aws-ecr-config';
 
@@ -32,9 +31,9 @@ class BuildAwsEcrConfigCommand extends Command
                 exit(1);
             }
         } catch (ProcessFailedException $exception) {
-            $this->warn('An error occurred: ' . $exception->getMessage());
+            $this->warn('An error occurred: '.$exception->getMessage());
         } catch (RandomException $e) {
-            $this->warn('An error occurred: ' . $e->getMessage());
+            $this->warn('An error occurred: '.$e->getMessage());
         }
         system('clear');
         $this->buildAwsEcrConfig();
@@ -45,7 +44,6 @@ class BuildAwsEcrConfigCommand extends Command
         $this->info('Creando (los) archivo de configuración (AWS-ECR)...');
 
         $this->newLine();
-
 
         $app_name = config('uxmaltech.name', config('APP_NAME', 'laravel'));
 
@@ -70,7 +68,7 @@ class BuildAwsEcrConfigCommand extends Command
         ];
 
         $this->table($headers, $variablesTable);
-        if (!$this->confirm('¿Es correcto?')) {
+        if (! $this->confirm('¿Es correcto?')) {
             $this->error('Abortando...');
             exit(1);
         }
@@ -109,5 +107,4 @@ class BuildAwsEcrConfigCommand extends Command
 
         system(base_path('./vendor/bin/pint').' '.config_path('aws-ecr.php'));
     }
-
 }

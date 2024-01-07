@@ -3,7 +3,6 @@
 namespace Uxmal\Devtools\Command;
 
 use Illuminate\Console\Command;
-use Uxmal\Devtools\Enum\InfraTypeEnum;
 
 class InstallCommand extends Command
 {
@@ -64,7 +63,6 @@ class InstallCommand extends Command
         if ($uxmaltech_features_aws_ecs_managed == 'yes') {
             $this->call('devtools:build-aws-ecs-config', []);
         }
-
 
         exit(0);
 

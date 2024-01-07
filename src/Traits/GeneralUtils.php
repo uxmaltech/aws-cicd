@@ -159,7 +159,6 @@ trait GeneralUtils
 
     protected ?string $personalAccessToken = null;
 
-
     protected array $pathRepositoriesToCopy = [];
 
     protected function configureSilentOption(): void
@@ -199,14 +198,14 @@ trait GeneralUtils
             exit(0);
         }
 
-        if( !file_exists($this->laravel->configPath('uxmaltech.php')) ){
+        if (! file_exists($this->laravel->configPath('uxmaltech.php'))) {
             $this->error('config/uxmaltech.php file not found. Please run "php artisan devtools:install" first.');
             exit(0);
         }
 
         if ($this->hasPendingGitCommits($this->laravel->basePath()) && ! $this->devMode) {
             $this->warn('El directorio de trabajo tiene cambios pendientes. Por favor, utilize <comment>git commit</comment> o <comment>stash</comment>');
-            if( !$this->confirm('¿Deseas continuar?', true) ){
+            if (! $this->confirm('¿Deseas continuar?', true)) {
                 $this->error('Operación cancelada por el usuario.');
                 exit(0);
             }
@@ -245,9 +244,6 @@ trait GeneralUtils
         }
 
         /********** END CHECKS **********/
-
-
-
 
         $this->clusterName = config('aws-cicd.cluster.name', 'laravel-app');
         $this->clusterPort = config('aws-cicd.cluster.port', 80);
@@ -339,31 +335,32 @@ trait GeneralUtils
                 'app-nginx' => $this->nginxAppRepository ?? '',
             ];
         }
-/*
-        if (! $this->isSilent()) {
-            $this->info('====================== Environment ======================');
-            $this->warn("(app) Tag: $this->ecrImageTag");
-            $this->info("(app) Timezone: $this->laravelAppTimeZone");
-            $this->info("\n(php-fpm) Version: $this->clusterContainerPhpFpmVersion");
-            $this->info("(php-fpm) Alpine Version: $this->clusterContainerPhpFpmAlpineVersion");
-            $this->info("\n(nginx) Version: $this->clusterContainerNginxVersion");
-            $this->info("(nginx) Alpine Version: $this->clusterContainerNginxAlpineVersion");
-            $this->info("\n(base-image) php-fpm repository => $this->clusterContainerPhpFpmRepository");
-            $this->info("(base-image) php-fpm repository:tag $this->clusterContainerPhpFpmAppRepositoryTag");
-            $this->info("(base-image) nginx repository : $this->clusterContainerNginxRepository");
-            $this->info("(base-image) nginx repository:tag $this->clusterContainerNginxRepositoryTag");
-            $this->info("\n(app-image) php-fpm repository : $this->clusterContainerPhpFpmAppRepository");
-            $this->info("(app-image) php-fpm repository:tag $this->clusterContainerPhpFpmAppRepositoryTag");
-            $this->info("(app-image) nginx repository : $this->clusterContainerNginxAppRepository");
-            $this->info("(app-image) nginx repository:tag $this->clusterContainerNginxAppRepositoryTag");
-            $this->info("\n(ecs-nginx) Cluster Name: $this->awsEcsServiceNginxClusterName");
-            $this->info("(ecs-nginx) Cluster Port: $this->clusterContainerPhpFpmPort");
-            $this->info("\n(ecs-php) Cluster Name: $this->awsEcsServicePhpFpmClusterName");
-            $this->info("(ecs-php) Cluster Port: $this->awsEcsServicePhpFpmClusterPort");
-            $this->info('=========================================================');
-            $this->info("\n\n");
-        }
-*/
+
+        /*
+                if (! $this->isSilent()) {
+                    $this->info('====================== Environment ======================');
+                    $this->warn("(app) Tag: $this->ecrImageTag");
+                    $this->info("(app) Timezone: $this->laravelAppTimeZone");
+                    $this->info("\n(php-fpm) Version: $this->clusterContainerPhpFpmVersion");
+                    $this->info("(php-fpm) Alpine Version: $this->clusterContainerPhpFpmAlpineVersion");
+                    $this->info("\n(nginx) Version: $this->clusterContainerNginxVersion");
+                    $this->info("(nginx) Alpine Version: $this->clusterContainerNginxAlpineVersion");
+                    $this->info("\n(base-image) php-fpm repository => $this->clusterContainerPhpFpmRepository");
+                    $this->info("(base-image) php-fpm repository:tag $this->clusterContainerPhpFpmAppRepositoryTag");
+                    $this->info("(base-image) nginx repository : $this->clusterContainerNginxRepository");
+                    $this->info("(base-image) nginx repository:tag $this->clusterContainerNginxRepositoryTag");
+                    $this->info("\n(app-image) php-fpm repository : $this->clusterContainerPhpFpmAppRepository");
+                    $this->info("(app-image) php-fpm repository:tag $this->clusterContainerPhpFpmAppRepositoryTag");
+                    $this->info("(app-image) nginx repository : $this->clusterContainerNginxAppRepository");
+                    $this->info("(app-image) nginx repository:tag $this->clusterContainerNginxAppRepositoryTag");
+                    $this->info("\n(ecs-nginx) Cluster Name: $this->awsEcsServiceNginxClusterName");
+                    $this->info("(ecs-nginx) Cluster Port: $this->clusterContainerPhpFpmPort");
+                    $this->info("\n(ecs-php) Cluster Name: $this->awsEcsServicePhpFpmClusterName");
+                    $this->info("(ecs-php) Cluster Port: $this->awsEcsServicePhpFpmClusterPort");
+                    $this->info('=========================================================');
+                    $this->info("\n\n");
+                }
+        */
         return true;
     }
 
@@ -436,7 +433,6 @@ trait GeneralUtils
                 */
             }
 
-
             if ($this->needPersonalAccessToken === true) {
                 $this->personalAccessToken = config('uxmaltech.git-hub-personal-access-token');
                 if (empty($this->personalAccessToken)) {
@@ -503,9 +499,9 @@ trait GeneralUtils
 
     public function runCmd(array $args, array $envVars = []): string
     {
-        if($this->devMode){
+        if ($this->devMode) {
             $this->newLine();
-            $this->line("Running Command [bash -c <comment>'".join(' ', $args)."'</comment>]");
+            $this->line("Running Command [bash -c <comment>'".implode(' ', $args)."'</comment>]");
         }
         $process = new Process($args);
         // Execute the process
@@ -564,7 +560,7 @@ trait GeneralUtils
 
         $envVars += [
             'BUILDKIT_PROGRESS' => 'plain',
-            'DOCKER_DEFAULT_PLATFORM' => 'linux/amd64'
+            'DOCKER_DEFAULT_PLATFORM' => 'linux/amd64',
         ];
         // Execute the process
         if (! empty($envVars)) {

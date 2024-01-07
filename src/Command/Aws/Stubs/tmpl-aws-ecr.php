@@ -19,5 +19,5 @@ return [
     ],
     'docker' => [
         'name' => '@app.prefix@-vpc',
-    ]
+    ],
 ];
