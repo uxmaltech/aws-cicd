@@ -528,7 +528,7 @@ trait GeneralUtils
         }
 
         $envVars += [
-            'COMPOSER_ALLOW_SUPERUSER' => 1
+            'COMPOSER_ALLOW_SUPERUSER' => 1,
         ];
 
         if (! empty($envVars)) {

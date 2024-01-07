@@ -144,7 +144,7 @@ class BuildAppImagesCommand extends Command
         if (! is_dir($this->laravel->basePath('.git'))) { // Si no existe el directorio .git, se copian los archivos con rsync
             $cmd = sprintf('rsync -av --exclude=%s %s %s', escapeshellarg('docker-images'), escapeshellarg($this->laravel->basePath().'/'), escapeshellarg($appBuildDir.'/'));
         } elseif ($this->devMode) { // Si existe el directorio .git y estamos en devMode, se copian los archivos con git ls-files
-            $cmd = "git ls-files -z | tar --null -T - -cz | tar -x -C $appBuildDir";
+            $cmd = "git ls-files -z | tar --null -T - -cz | tar -xz -C $appBuildDir";
         } else { // Si existe el directorio .git y NO estamos en devMode, se copian los archivos con git archive (current branch)
             $cmd = "git archive $this->gitCommit | tar -x -C $appBuildDir";
         }
