@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: ./docker-images/build/docker/nginx/Dockerfile
-    image: ${ECR_NGINX_LATEST_BASE_IMAGE}
+    image: ${ECR_NGINX_APP_IMAGE_TAG}
     ports:
       - "${ECR_NGINX_PORT}:${ECR_NGINX_PORT}"
     depends_on:
@@ -16,7 +16,7 @@ services:
     build:
       context: .
       dockerfile: ./docker-images/build/docker/php-fpm/Dockerfile
-    image: ${ECR_PHP_FPM_LATEST_BASE_IMAGE}
+    image: ${ECR_PHP_FPM_APP_IMAGE_TAG}
     networks:
       - app-network
 

@@ -562,7 +562,10 @@ trait GeneralUtils
             $process->setWorkingDirectory($cwd);
         }
 
-        $envVars += ['DOCKER_DEFAULT_PLATFORM' => 'linux/amd64'];
+        $envVars += [
+            'BUILDKIT_PROGRESS' => 'plain',
+            'DOCKER_DEFAULT_PLATFORM' => 'linux/amd64'
+        ];
         // Execute the process
         if (! empty($envVars)) {
             $process->setEnv($envVars);

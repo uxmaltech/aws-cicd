@@ -66,6 +66,7 @@ class BuildBaseImagesCommand extends Command
 
         $ecr_php_fpm = config('aws-ecr.php-fpm');
         if ($ecr_php_fpm) {
+            $ecr_php_fpm_versioned_tag = $prefix . '-php-fpm' . ':' . $this->ecrImageTag;
             $ecr_php_fpm_repository = $ecr_proxy . '/' . $prefix . '-php-fpm';
             $ecr_php_fpm_base_image = $ecr_php_fpm['base-image'];
             $ecr_php_fpm_exposed_port = $ecr_php_fpm['exposed-port'];
@@ -73,12 +74,14 @@ class BuildBaseImagesCommand extends Command
             $envTable = array_merge($envTable, [
                 ['Ecr PHP FPM base image', $ecr_php_fpm_base_image],
                 ['Ecr PHP FPM repository', $ecr_php_fpm_repository],
+                ['Ecr PHP FPM versioned tag', $ecr_php_fpm_versioned_tag],
                 ['Ecr PHP FPM exposed ports', $ecr_php_fpm_exposed_port],
             ]);
         }
 
         $ecr_nginx = config('aws-ecr.nginx');
         if ($ecr_nginx) {
+            $ecr_nginx_versioned_tag = 'uxtch-nginx' . ':' . $this->ecrImageTag;
             $ecr_nginx_repository = $ecr_proxy . '/' . $prefix . '-nginx';
             $ecr_nginx_base_image = $ecr_nginx['base-image'];
             $ecr_nginx_exposed_port = $ecr_nginx['exposed-port'];
@@ -86,6 +89,7 @@ class BuildBaseImagesCommand extends Command
             $envTable = array_merge($envTable, [
                 ['Ecr Nginx base image', $ecr_nginx_base_image],
                 ['Ecr Nginx repository', $ecr_nginx_repository],
+                ['Ecr Nginx versioned tag', $ecr_nginx_versioned_tag],
                 ['Ecr Nginx exposed port', $ecr_nginx_exposed_port],
             ]);
         }
@@ -117,14 +121,13 @@ class BuildBaseImagesCommand extends Command
                 $this->error("The directory docker-images/base-images/uxtch-php-fpm does not exists.");
                 exit(1);
             }
-            $versioned_php_fpm_tag = 'uxtch-php-fpm' . ':' . $this->ecrImageTag;
             $ecr_proxy_php_fpm_tag = $ecr_php_fpm_repository . ':' . $this->ecrImageTag;
             $latest_php_fpm_tag = $ecr_php_fpm_repository . ':latest';
-            $this->runDockerCmd(['build', '.', '-t', $versioned_php_fpm_tag], $workDir);
-           // $this->runDockerCmd(['tag', $versioned_php_fpm_tag, $ecr_proxy_php_fpm_tag], $workDir);
-            // $this->runDockerCmd(['tag', $versioned_php_fpm_tag, $latest_php_fpm_tag], $workDir);
-            $this->info("Docker image built $versioned_php_fpm_tag successfully.");
-            $this->replaceConfigKey('php-fpm.latest-base-image', $versioned_php_fpm_tag, false, config_path('aws-ecr.php'));
+            $this->runDockerCmd(['build', '.', '-t', $ecr_php_fpm_versioned_tag], $workDir);
+            $this->runDockerCmd(['tag', $ecr_php_fpm_versioned_tag, $ecr_proxy_php_fpm_tag], $workDir);
+            $this->runDockerCmd(['tag', $ecr_php_fpm_versioned_tag, $latest_php_fpm_tag], $workDir);
+            $this->info("Docker image built $ecr_php_fpm_versioned_tag successfully.");
+            $this->replaceConfigKey('php-fpm.latest-base-image', $ecr_php_fpm_versioned_tag, false, config_path('aws-ecr.php'));
 
         }
 
@@ -134,14 +137,13 @@ class BuildBaseImagesCommand extends Command
                 $this->error("The directory docker-images/base-images/uxtch-nginx does not exists.");
                 exit(1);
             }
-            $versioned_nginx_tag = 'uxtch-nginx' . ':' . $this->ecrImageTag;
             $ecr_proxy_nginx_tag = $ecr_nginx_repository . ':' . $this->ecrImageTag;
             $latest_nginx_tag = $ecr_nginx_repository . ':latest';
-            $this->runDockerCmd(['build', '.', '-t', $versioned_nginx_tag], $workDir);
-            // $this->runDockerCmd(['tag', $versioned_nginx_tag, $ecr_proxy_nginx_tag], $workDir);
-            // $this->runDockerCmd(['tag', $versioned_nginx_tag, $latest_nginx_tag], $workDir);
-            $this->info("Docker image built $versioned_nginx_tag successfully.");
-            $this->replaceConfigKey('nginx.latest-base-image', $versioned_nginx_tag, false, config_path('aws-ecr.php'));
+            $this->runDockerCmd(['build', '.', '-t', $ecr_nginx_versioned_tag], $workDir);
+            $this->runDockerCmd(['tag', $ecr_nginx_versioned_tag, $ecr_proxy_nginx_tag], $workDir);
+            $this->runDockerCmd(['tag', $ecr_nginx_versioned_tag, $latest_nginx_tag], $workDir);
+            $this->info("Docker image built $ecr_nginx_versioned_tag successfully.");
+            $this->replaceConfigKey('nginx.latest-base-image', $ecr_nginx_versioned_tag, false, config_path('aws-ecr.php'));
         }
         exit(0);
     }

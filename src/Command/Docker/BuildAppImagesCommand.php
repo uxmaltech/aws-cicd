@@ -3,10 +3,11 @@
 namespace Uxmal\Devtools\Command\Docker;
 
 use Illuminate\Console\Command;
+use Random\RandomException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Uxmal\Devtools\Traits\GeneralUtils;
 
-class ComposeBuildCommand extends Command
+class BuildAppImagesCommand extends Command
 {
     use GeneralUtils;
 
@@ -28,7 +29,7 @@ class ComposeBuildCommand extends Command
      * ? --tag=qa
      * ? --push-ecr=tag
      */
-    protected $signature = 'docker:compose-build 
+    protected $signature = 'docker:build-app-images 
                         {--no-delete}';
 
     public function __construct()
@@ -45,8 +46,11 @@ class ComposeBuildCommand extends Command
             }
         } catch (ProcessFailedException $exception) {
             $this->warn('An error occurred: ' . $exception->getMessage());
+        } catch (RandomException $e) {
+            $this->warn('An error occurred: ' . $e->getMessage());
         }
 
+        system('clear');
         $this->composeBuild();
     }
 
@@ -73,7 +77,6 @@ class ComposeBuildCommand extends Command
         $ECR_NGINX_PORT = explode('/', $ECR_NGINX_EXPOSED_PORT)[0];
         $ECR_NGINX_PROTOCOL = explode('/', $ECR_NGINX_EXPOSED_PORT)[1];
         $ECR_NGINX_SERVICE_DN = config('aws-ecr.nginx.app-image') . '.' . config('uxmaltech.internal_domain');
-
         $ECR_TIMEZONE = config('aws-ecr.timezone', 'America/Mexico_City');
 
         $UXMALTECH_APP_NAME = config('uxmaltech.name', config('APP_NAME', 'laravel'));
@@ -81,6 +84,8 @@ class ComposeBuildCommand extends Command
         $UXMALTECH_AUTHOR_NAME = config('uxmaltech.author.name', config('APP_AUTHOR', 'UxmalTech'));
         $UXMALTECH_AUTHOR_EMAIL = config('uxmaltech.author.email', config('APP_AUTHOR_EMAIL', 'name@email.com'));
 
+        $ECR_NGINX_APP_IMAGE_TAG = $UXMALTECH_APP_NAME . '-nginx:' . $UXMALTECH_CURRENT_TAG;
+        $ECR_PHP_FPM_APP_IMAGE_TAG = $UXMALTECH_APP_NAME . '-php-fpm:' . $UXMALTECH_CURRENT_TAG;
 
         $envsubstVars = [
             'DOLLAR' => '$',
@@ -89,15 +94,18 @@ class ComposeBuildCommand extends Command
             'UXMALTECH_AUTHOR_EMAIL' => $UXMALTECH_AUTHOR_EMAIL,
             'UXMALTECH_APP_NAME' => $UXMALTECH_APP_NAME,
 
+
             'ECR_TIMEZONE' => $ECR_TIMEZONE,
             'ECR_PHP_FPM_LATEST_BASE_IMAGE' => $ECR_PHP_FPM_LATEST_BASE_IMAGE,
             'ECR_PHP_FPM_LATEST_BASE_IMAGE_FROM' => $ECR_PHP_FPM_LATEST_BASE_IMAGE_FROM,
+            'ECR_PHP_FPM_APP_IMAGE_TAG' => $ECR_PHP_FPM_APP_IMAGE_TAG,
             'ECR_PHP_FPM_PORT' => $ECR_PHP_FPM_PORT,
             'ECR_PHP_FPM_PROTOCOL' => $ECR_PHP_FPM_PROTOCOL,
             'ECR_PHP_FPM_SERVICE_DN' => $ECR_PHP_FPM_SERVICE_DN,
 
             'ECR_NGINX_LATEST_BASE_IMAGE' => $ECR_NGINX_LATEST_BASE_IMAGE,
             'ECR_NGINX_LATEST_BASE_IMAGE_FROM' => $ECR_NGINX_LATEST_BASE_IMAGE_FROM,
+            'ECR_NGINX_APP_IMAGE_TAG' => $ECR_NGINX_APP_IMAGE_TAG,
             'ECR_NGINX_PORT' => $ECR_NGINX_PORT,
             'ECR_NGINX_PROTOCOL' => $ECR_NGINX_PROTOCOL,
             'ECR_NGINX_SERVICE_DN' => $ECR_NGINX_SERVICE_DN,
@@ -110,6 +118,10 @@ class ComposeBuildCommand extends Command
             $envTable[] = [$variable, $contenido];
         }
         $this->table($headers, $envTable);
+
+        if ($this->confirm('Do you wish to continue?') === false) {
+            exit(1);
+        }
 
         $this->line('(Dockerizing) Laravel Application' . "\t\t" . '[<comment>' . $UXMALTECH_APP_NAME . '</comment>]');
         $this->line('Build directory                  ' . "\t\t" . '[<comment>' . $this->laravel->basePath('docker-images/build') . '</comment>]');
@@ -134,18 +146,13 @@ class ComposeBuildCommand extends Command
         $this->output->write('Copying files to build directory...' . "\t\t");
         if (!is_dir($this->laravel->basePath('.git'))) { // Si no existe el directorio .git, se copian los archivos con rsync
             $cmd = sprintf('rsync -av --exclude=%s %s %s', escapeshellarg('docker-images'), escapeshellarg($this->laravel->basePath() . '/'), escapeshellarg($appBuildDir . '/'));
-            $this->runCmd(['bash', '-c', $cmd]);
         } elseif ($this->devMode) { // Si existe el directorio .git y estamos en devMode, se copian los archivos con git ls-files
             $cmd = "git ls-files -z | tar --null -T - -cz | tar -x -C $appBuildDir";
-            $this->runCmd(['bash', '-c', $cmd]);
         } else { // Si existe el directorio .git y NO estamos en devMode, se copian los archivos con git archive (current branch)
             $cmd = "git archive $this->gitCommit | tar -x -C $appBuildDir";
-            $this->runCmd(['bash', '-c', $cmd]);
         }
+        $this->runCmd(['bash', '-c', $cmd]);
         $this->line('[<comment>OK</comment>]');
-        if ($this->devMode) {
-            $this->info("Running Command [bash -c '$cmd']");
-        }
 
         $this->checkProtectedPackages();
 
@@ -180,9 +187,6 @@ class ComposeBuildCommand extends Command
         ], $appBuildDir);
 
         $this->output->write("Running composer $composer_command in build directory...\t\t");
-        if ($this->devMode) {
-            $this->info("Running Command [bash -c 'cd $appBuildDir && npm run build']");
-        }
         try {
             $this->runCmd(['bash', '-c', "cd $appBuildDir && npm run build"]);
         } catch (ProcessFailedException $exception) {
@@ -226,12 +230,14 @@ class ComposeBuildCommand extends Command
         $cmd = "envsubst < $dockerImageDir/app-images/docker-compose-tmpl.yml > {$this->laravel->basePath('docker-compose.yml')}";
         $this->runCmd(['bash', '-c', $cmd], $envsubstVars);
 
-        exit(0);
-
         $cmd = "envsubst < $dockerImageDir/app-images/tmpl.env > $appBuildDir/.env";
         $this->runCmd(['bash', '-c', $cmd], $envsubstVars);
 
-        $this->runDockerCmd(['compose', 'build']);
+        //docker build -f docker-images/build/docker/php-fpm/Dockerfile .
+        $this->runDockerCmd(['build', '-f', $dockerPHPFPMDir . '/Dockerfile', '.', '-t', $ECR_PHP_FPM_APP_IMAGE_TAG]);
+
+        $this->runDockerCmd(['build', '-f', $dockerNginxDir . '/Dockerfile', '.', '-t', $ECR_NGINX_APP_IMAGE_TAG]);
+
         /*
         if (!$this->devMode) {
             // En modo producción se tagea con latest para despues hacer el push de las imágenes a ECR.
@@ -241,8 +247,8 @@ class ComposeBuildCommand extends Command
         }
         */
 
-        if (!$this->option('no-delete')) {
-            $this->info('Removing build directory...');
+        if (!$this->devMode) {
+            $this->info('Production Mode Removing build directory...');
             $this->runProcess("rm -rf $buildDir");
         }
 

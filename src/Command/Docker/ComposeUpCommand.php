@@ -4,6 +4,7 @@ namespace Uxmal\Devtools\Command\Docker;
 
 use Docker\Docker;
 use Illuminate\Console\Command;
+use Random\RandomException;
 use Uxmal\Devtools\Traits\GeneralUtils;
 
 class ComposeUpCommand extends Command
@@ -15,18 +16,6 @@ class ComposeUpCommand extends Command
      *
      * @var string
      *
-     * --build
-     * --run
-     * --check
-     * ? --push
-     * ? --pull
-     * ? --tag=latest
-     * ? --tag=dev
-     * ? --tag=prod
-     * ? --tag=staging
-     * ? --tag=testing
-     * ? --tag=qa
-     * ? --push-ecr=tag
      */
     protected $signature = 'docker:compose-up';
 
@@ -36,30 +25,21 @@ class ComposeUpCommand extends Command
         $this->configureSilentOption();
     }
 
+    /**
+     * @throws RandomException
+     */
     public function handle(): void
     {
         if ($this->checkEnvironment() === false) {
             $this->error('Environment not ready.');
             exit(1);
         }
-
+        system('clear');
         $this->upDockerCompose();
-        /*
-        $docker = Docker::create();
-        $containers = $docker->imageList();
-
-
-
-        foreach ($containers as $container) {
-            var_dump($container->getRepoTags());
-        }
-        */
-
     }
 
     public function upDockerCompose(): void
     {
-        $this->devMode = true;
         $this->runDockerCmd(['compose', 'up']);
     }
 }

@@ -5,7 +5,7 @@ return [
     'domain' => '@app.domain@',
     'subdomain' => '@app.subdomain@',
     'internal_domain' => '@app.internal_domain@',
-    'infra' => '@app.infra@',
+    'mode' => '@app.mode@',
     'dev_mode' => true,
     'service_ports' => @app.service.ports@,
     'key' => env('APP_KEY'),

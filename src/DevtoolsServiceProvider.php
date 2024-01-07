@@ -11,7 +11,7 @@ use Uxmal\Devtools\Command\Aws\ECRPushToRepositoryCommand;
 use Uxmal\Devtools\Command\AWS\Route53CreateDomainsCommand;
 use Uxmal\Devtools\Command\BuildInfrastructureConfigCommand;
 use Uxmal\Devtools\Command\Docker\BuildBaseImagesCommand;
-use Uxmal\Devtools\Command\Docker\ComposeBuildCommand;
+use Uxmal\Devtools\Command\Docker\BuildAppImagesCommand;
 use Uxmal\Devtools\Command\Docker\ComposeUpCommand;
 use Uxmal\Devtools\Command\InstallCommand;
 use Uxmal\Devtools\Command\TestCommand;
@@ -41,7 +41,7 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
             $this->commands([
                 // Docker
                 BuildBaseImagesCommand::class,
-                ComposeBuildCommand::class,
+                BuildAppImagesCommand::class,
                 InstallCommand::class,
                 BuildUxmalTechConfigCommand::class,
                 ComposeUpCommand::class,
@@ -86,7 +86,7 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
         return [
             // Docker
             BuildBaseImagesCommand::class,
-            ComposeBuildCommand::class,
+            BuildAppImagesCommand::class,
             InstallCommand::class,
             BuildUxmalTechConfigCommand::class,
             ComposeUpCommand::class,
