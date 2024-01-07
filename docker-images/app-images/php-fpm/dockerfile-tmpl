@@ -1,13 +1,6 @@
-# Use Alpine Linux
-FROM ${PHP_FPM_BASE_REPOSITORY_TAG}
+FROM ${ECR_PHP_FPM_LATEST_BASE_IMAGE}
 
-# Declare maintainer
-LABEL \
-    version="${APP_TAG}" \
-        Maintainer="${APP_AUTHOR} <${APP_EMAIL}>" \
-    Description="${APP_NAME}:php-fpm:${APP_TAG}"
-
-COPY docker-images/build/${APP_NAME} /www
+COPY docker-images/build/${UXMALTECH_APP_NAME} /www
 
 RUN mkdir -p /www/storage/framework/sessions
 RUN mkdir -p /www/storage/framework/views
@@ -18,7 +11,7 @@ RUN chmod -R 777 /www/bootstrap/cache
 
 ENV PHP_FPM_ERROR_LOG=/proc/self/fd/2
 ENV PHP_FPM_LOG_LEVEL=error
-ENV PHP_FPM_LISTEN=0.0.0.0:${PHP_FPM_SERVICE_PORT}
+ENV PHP_FPM_LISTEN=0.0.0.0:${ECR_PHP_FPM_PORT}
 ENV PHP_FPM_USER=www-data
 ENV PHP_FPM_GROUP=www-data
 ENV PHP_FPM_LISTEN_OWNER=www-data
@@ -27,4 +20,4 @@ ENV PHP_MEMORY_LIMIT=512M
 ENV PHP_EXPOSE_PHP=On
 ENV PHP_SESSION_GC_MAXLIFETIME=1440
 
-EXPOSE ${PHP_FPM_SERVICE_PORT}
+EXPOSE ${ECR_PHP_FPM_PORT}

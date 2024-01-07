@@ -1,22 +1,22 @@
 version: '3.2'
 services:
-  ${NGINX_SERVICE_HOST}:
+  ${ECR_NGINX_SERVICE_DN}:
     build:
       context: .
       dockerfile: ./docker-images/build/docker/nginx/Dockerfile
-    image: ${NGINX_APP_REPOSITORY_TAG}
+    image: ${ECR_NGINX_LATEST_BASE_IMAGE}
     ports:
-      - "${CLUSTER_PORT}:${NGINX_SERVICE_PORT}"
+      - "${ECR_NGINX_PORT}:${ECR_NGINX_PORT}"
     depends_on:
-      - ${PHP_FPM_SERVICE_HOST}
+      - ${ECR_PHP_FPM_SERVICE_DN}
     networks:
       - app-network
 
-  ${PHP_FPM_SERVICE_HOST}:
+  ${ECR_PHP_FPM_SERVICE_DN}:
     build:
       context: .
       dockerfile: ./docker-images/build/docker/php-fpm/Dockerfile
-    image: ${PHP_FPM_APP_REPOSITORY_TAG}
+    image: ${ECR_PHP_FPM_LATEST_BASE_IMAGE}
     networks:
       - app-network
 

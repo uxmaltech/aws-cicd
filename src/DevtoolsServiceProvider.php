@@ -16,6 +16,10 @@ use Uxmal\Devtools\Command\Docker\ComposeUpCommand;
 use Uxmal\Devtools\Command\InstallCommand;
 use Uxmal\Devtools\Command\TestCommand;
 use Uxmal\Devtools\Command\Uxmaltech\AddBackOfficeUICommand;
+use Uxmal\Devtools\Command\Uxmaltech\BuildAwsEcrConfigCommand;
+use Uxmal\Devtools\Command\Uxmaltech\BuildAwsEcsConfigCommand;
+use Uxmal\Devtools\Command\Uxmaltech\BuildAwsVpcConfigCommand;
+use Uxmal\Devtools\Command\Uxmaltech\BuildUxmalTechConfigCommand;
 
 class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvider
 {
@@ -39,10 +43,15 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
                 BuildBaseImagesCommand::class,
                 ComposeBuildCommand::class,
                 InstallCommand::class,
+                BuildUxmalTechConfigCommand::class,
                 ComposeUpCommand::class,
-                // Uxmaltech
+                // Devtools
                 AddBackOfficeUICommand::class,
                 BuildInfrastructureConfigCommand::class,
+                BuildUxmalTechConfigCommand::class,
+                BuildAwsEcrConfigCommand::class,
+                BuildAwsVpcConfigCommand::class,
+                BuildAwsEcsConfigCommand::class,
                 TestCommand::class,
                 // AWS
                 ECRPushToRepositoryCommand::class,
@@ -80,10 +89,15 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
             BuildBaseImagesCommand::class,
             ComposeBuildCommand::class,
             InstallCommand::class,
+            BuildUxmalTechConfigCommand::class,
             ComposeUpCommand::class,
-            // Uxmaltech
+            // Devtools
             AddBackOfficeUICommand::class,
             BuildInfrastructureConfigCommand::class,
+            BuildUxmalTechConfigCommand::class,
+            BuildAwsEcrConfigCommand::class,
+            BuildAwsVpcConfigCommand::class,
+            BuildAwsEcsConfigCommand::class,
             TestCommand::class,
             // AWS
             ECRPushToRepositoryCommand::class,

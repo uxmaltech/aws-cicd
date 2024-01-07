@@ -57,7 +57,7 @@ trait GeneralUtils
 
     protected string $gitCommit = 'none';
 
-    protected string $clusterImageTag = 'latest';
+    protected string $ecrImageTag = 'latest';
 
     protected string $laravelAppTimeZone = 'America/Monterrey';
 
@@ -147,15 +147,18 @@ trait GeneralUtils
     protected string $clusterContainerNginxAppRepositoryTagLatest;
 
     /*  EO NEW DEFINITIONS */
-    protected array $repositoriesKeys;
+    /**********************************************/
 
     protected array $uxmalPrivatePackages = [
         'uxmaltech/backoffice-ui',
     ];
 
+    protected array $repositoriesKeys;
+
     protected bool $needPersonalAccessToken = false;
 
     protected ?string $personalAccessToken = null;
+
 
     protected array $pathRepositoriesToCopy = [];
 
@@ -189,33 +192,41 @@ trait GeneralUtils
      */
     public function checkEnvironment(): bool
     {
-        $devMode = config('aws-cicd.uxmaltech.devMode', false);
-        if ($this->hasPendingGitCommits($this->laravel->basePath()) && ! $devMode) {
-            $this->error('There are pending git commits. Please commit or stash them first.');
+        $this->devMode = config('uxmaltech.dev_mode', false);
 
-            return false;
+        if (! is_dir($this->laravel->basePath('docker-images'))) {
+            $this->error('Docker images folder not found. Please run "php artisan devtools:install" first.');
+            exit(0);
         }
 
-        if (! file_exists($this->laravel->basePath('docker-images')) || ! file_exists($this->laravel->configPath('aws-cicd.php'))) {
-            $this->error('Docker images folder not found. Please run "php artisan aws-cicd:install" first.');
+        if( !file_exists($this->laravel->configPath('uxmaltech.php')) ){
+            $this->error('config/uxmaltech.php file not found. Please run "php artisan devtools:install" first.');
+            exit(0);
+        }
 
-            return false;
+        if ($this->hasPendingGitCommits($this->laravel->basePath()) && ! $this->devMode) {
+            $this->warn('El directorio de trabajo tiene cambios pendientes. Por favor, utilize <comment>git commit</comment> o <comment>stash</comment>');
+            if( !$this->confirm('¿Deseas continuar?', true) ){
+                $this->error('Operación cancelada por el usuario.');
+                exit(0);
+            }
+
         }
 
         if (! $this->isCommandAvailable('docker')) {
             $this->error('Docker is not available. Please install Docker first.');
-
-            return false;
+            exit(0);
         }
 
         if (! $this->isCommandAvailable('git')) {
-            $this->warn('Git is not available. Please install Git first.');
+            $this->error('Git is not available. Please install Git first.');
+            exit(0);
         }
 
-        /*
-         * Set Environment Variables
-         */
-        $this->clusterAwsVpcId = config('aws-cicd.cluster.aws.vpc.id'); // awsVpcId
+        if (! $this->isCommandAvailable('composer')) {
+            $this->error('Composer is not available (composer binary). Please install Composer first.');
+            exit(1);
+        }
 
         if (is_dir($this->laravel->basePath('.git'))) {
             $this->gitTag = $this->runCmd(['git', 'describe', '--tags', '--exact-match', '2>', '/dev/null']);
@@ -223,18 +234,20 @@ trait GeneralUtils
             $this->gitCommit = $this->runCmd(['git', 'rev-parse', '--short', 'HEAD']);
 
             if ($this->gitTag) {
-                $this->clusterImageTag = $this->gitTag;
+                $this->ecrImageTag = $this->gitTag;
             } else {
-                $this->clusterImageTag = (($this->gitBranch) ? $this->gitBranch.'-' : '').(($this->gitCommit) ? $this->gitCommit : '');
+                $this->ecrImageTag = (($this->gitBranch) ? $this->gitBranch.'-' : '').(($this->gitCommit) ? $this->gitCommit : '');
             }
         }
 
-        if ($devMode) {
-            $this->clusterImageTag = 'dev-'.bin2hex(random_bytes(3));
+        if ($this->devMode) {
+            $this->ecrImageTag = 'dev-'.bin2hex(random_bytes(3));
         }
 
-        $this->debugMode = config('aws-cicd.laravel.app.debug', false);
-        $this->devMode = config('aws-cicd.uxmaltech.devMode', false);
+        /********** END CHECKS **********/
+
+
+
 
         $this->clusterName = config('aws-cicd.cluster.name', 'laravel-app');
         $this->clusterPort = config('aws-cicd.cluster.port', 80);
@@ -259,7 +272,7 @@ trait GeneralUtils
 
         // Container PHP-FPM (Application)
         $this->clusterContainerPhpFpmAppRepository = "app-php-fpm-$this->clusterName";
-        $this->clusterContainerPhpFpmAppRepositoryTag = "$this->clusterContainerPhpFpmAppRepository:$this->clusterImageTag";
+        $this->clusterContainerPhpFpmAppRepositoryTag = "$this->clusterContainerPhpFpmAppRepository:$this->ecrImageTag";
         $this->clusterContainerPhpFpmAppRepositoryTagLatest = "$this->clusterContainerPhpFpmAppRepository:latest";
 
         $this->clusterContainerNginxPort = config('aws-cicd.cluster.containers.nginx.port', 80); // clusterContainerNginxPort
@@ -275,7 +288,7 @@ trait GeneralUtils
 
         // Container NGINX (Application)
         $this->clusterContainerNginxAppRepository = 'app-nginx-'.$this->clusterName;
-        $this->clusterContainerNginxAppRepositoryTag = "$this->clusterContainerNginxAppRepository:$this->clusterImageTag";
+        $this->clusterContainerNginxAppRepositoryTag = "$this->clusterContainerNginxAppRepository:$this->ecrImageTag";
         $this->clusterContainerNginxAppRepositoryTagLatest = "$this->clusterContainerNginxAppRepository:latest";
 
         $this->repositoriesKeys = [
@@ -326,10 +339,10 @@ trait GeneralUtils
                 'app-nginx' => $this->nginxAppRepository ?? '',
             ];
         }
-
+/*
         if (! $this->isSilent()) {
             $this->info('====================== Environment ======================');
-            $this->warn("(app) Tag: $this->clusterImageTag");
+            $this->warn("(app) Tag: $this->ecrImageTag");
             $this->info("(app) Timezone: $this->laravelAppTimeZone");
             $this->info("\n(php-fpm) Version: $this->clusterContainerPhpFpmVersion");
             $this->info("(php-fpm) Alpine Version: $this->clusterContainerPhpFpmAlpineVersion");
@@ -350,7 +363,7 @@ trait GeneralUtils
             $this->info('=========================================================');
             $this->info("\n\n");
         }
-
+*/
         return true;
     }
 
@@ -399,7 +412,7 @@ trait GeneralUtils
                 $package = $requirement['package'];
                 $version = $requirement['version'];
                 if (in_array($package, $this->uxmalPrivatePackages)) {
-                    $this->info("Package: $package, Version: $version Need Personal Access Token.");
+                    $this->line("$package:$version \t\t[<comment>Need Personal Access Token</comment>].");
                     $this->needPersonalAccessToken = true;
                 }
             }
@@ -410,7 +423,7 @@ trait GeneralUtils
                 $package = $requirement['package'];
                 $version = $requirement['version'];
                 if (in_array($package, $this->uxmalPrivatePackages)) {
-                    $this->info("Package: $package, Version: $version Need Personal Access Token.");
+                    $this->line("$package:$version \t\t[<comment>Need Personal Access Token</comment>].");
                     $this->needPersonalAccessToken = true;
                 }
                 /*
@@ -423,10 +436,11 @@ trait GeneralUtils
                 */
             }
 
+
             if ($this->needPersonalAccessToken === true) {
-                $this->personalAccessToken = config('aws-cicd.uxmaltech.personalAccessToken');
+                $this->personalAccessToken = config('uxmaltech.git-hub-personal-access-token');
                 if (empty($this->personalAccessToken)) {
-                    $this->warn('Personal Access Token is required. Please add UXMALTECH_PERSONAL_ACCESS_TOKEN to your .env file.');
+                    $this->warn('Personal Access Token is required. Please add GITHUB_PERSONAL_ACCESS_TOKEN to your .env file.');
                 }
 
                 // Check if added to composer global config composer config --global github-oauth.github.com
@@ -437,10 +451,9 @@ trait GeneralUtils
                 }
 
                 if (empty($composerGlobalAccessToken)) {
-                    $this->info('Adding Personal Access Token to composer global config.');
                     $this->runCmd(['composer', 'config', '--global', '--auth', 'github-oauth.github.com', $this->personalAccessToken]);
                 } elseif ($composerGlobalAccessToken === $this->personalAccessToken) {
-                    $this->info('Personal Access Token already added to composer global config.');
+                    $this->line('Personal Access Token already added.'."\t\t".'[<comment>OK</comment>]');
                 } else {
                     $this->error('Personal Access Token already added to composer global config but is different.');
                     exit(1);
@@ -490,6 +503,10 @@ trait GeneralUtils
 
     public function runCmd(array $args, array $envVars = []): string
     {
+        if($this->devMode){
+            $this->newLine();
+            $this->line("Running Command [bash -c <comment>'".join(' ', $args)."'</comment>]");
+        }
         $process = new Process($args);
         // Execute the process
         if (! empty($envVars)) {
@@ -518,7 +535,7 @@ trait GeneralUtils
             $process->setEnv($envVars);
         }
 
-        if ($this->debugMode) {
+        if ($this->devMode) {
             $this->info('Running Command [composer '.implode(' ', $args).']');
             if (file_exists('/dev/tty') && is_readable('/dev/tty')) {
                 $process->setTty(true);
@@ -527,7 +544,7 @@ trait GeneralUtils
         $process->run();
 
         // Capture the output
-        return $this->debugMode ? true : trim($process->getOutput());
+        return $this->devMode ? true : trim($process->getOutput());
     }
 
     public function runDockerCmd(array $args, string $cwd = '.', mixed $input = null, array $envVars = []): string
@@ -535,14 +552,8 @@ trait GeneralUtils
 
         $process = new Process(array_merge(['docker'], $args));
 
-        $process->setTimeout(3600);
-        if (in_array('push', $args)) {
-            $process->setTimeout(3600);
-        } elseif (in_array('up', $args)) {
-            $process->setTimeout(36000);
-        } else {
-            $process->setTimeout(60);
-        }
+        $process->setTimeout(36000);
+        $process->setIdleTimeout(3600);
         if (! empty($input)) {
             $process->setInput($input);
         }
@@ -576,7 +587,7 @@ trait GeneralUtils
         }
 
         // Capture the output
-        return $this->debugMode ? true : trim($process->getOutput());
+        return $this->devMode ? true : trim($process->getOutput());
     }
 
     /**
@@ -617,13 +628,13 @@ trait GeneralUtils
             }
         }
         if ($backup) {
-            if (file_exists($this->configFile.'.bak')) {
-                unlink($this->configFile.'.bak');
+            if (file_exists($configPath.'.bak')) {
+                unlink($configPath.'.bak');
             }
-            copy(config_path($this->configFile), config_path($this->configFile.'.bak'));
+            copy($configPath, $configPath.'.bak');
         }
         file_put_contents($configPath, '<?php return '.$this->var_export_short($configData, true).';');
-
+        system(base_path('./vendor/bin/pint').' '.$configPath);
         config()->offsetUnset(basename($this->configFile, '.php'));
     }
 

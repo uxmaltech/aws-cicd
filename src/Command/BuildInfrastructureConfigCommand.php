@@ -40,13 +40,13 @@ class BuildInfrastructureConfigCommand extends Aws\AWSCommand
 
         switch ($choice) {
             case InfraTypeEnum::nginx_phpfpm_2->value:
-                $infra_template = __DIR__.'/Aws/InfrastructureStubs/tmpl-nginx-php-fpm.php';
+                $infra_template = __DIR__.'/Aws/Stubs/tmpl-nginx-php-fpm.php';
                 break;
             case InfraTypeEnum::apache_php->value:
-                $infra_template = __DIR__.'/Aws/InfrastructureStubs/tmpl-apache-php.php';
+                $infra_template = __DIR__.'/Aws/Stubs/tmpl-apache-php.php';
                 break;
             case InfraTypeEnum::artisan_php->value:
-                $infra_template = __DIR__.'/Aws/InfrastructureStubs/tmpl-artisan-php.php';
+                $infra_template = __DIR__.'/Aws/Stubs/tmpl-artisan-php.php';
                 break;
             default:
                 $this->error('Opción no válida');

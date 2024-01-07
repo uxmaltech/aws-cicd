@@ -151,7 +151,7 @@ class TestCommand extends AwsCommand
             $replace[] = $subnet;
         }
 
-        $infra_template = __DIR__.'/Aws/InfrastructureStubs/ecs-php-fpm-task-definition.json';
+        $infra_template = __DIR__.'/Aws/Stubs/ecs-php-fpm-task-definition.json';
 
         $config = file_get_contents($infra_template);
         $config = str_replace($search, $replace, $config);

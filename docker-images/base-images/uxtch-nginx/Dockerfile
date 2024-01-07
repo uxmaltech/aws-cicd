@@ -36,4 +36,4 @@ VOLUME ["/etc/nginx/conf.d", "/var/log/nginx", "/www"]
 EXPOSE 8000
 
 # Entry point
-ENTRYPOINT ["/usr/sbin/nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/usr/sbin/nginx", "-g", "daemon off; error_log /dev/stdout info;"]
