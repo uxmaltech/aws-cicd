@@ -527,6 +527,10 @@ trait GeneralUtils
             $process->setWorkingDirectory($cwd);
         }
 
+        $envVars += [
+            'COMPOSER_ALLOW_SUPERUSER' => 1
+        ];
+
         if (! empty($envVars)) {
             $process->setEnv($envVars);
         }
