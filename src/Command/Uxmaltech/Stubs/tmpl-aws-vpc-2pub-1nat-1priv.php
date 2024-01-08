@@ -5,6 +5,7 @@ return
         'name' => '@app.prefix@-vpc',
         'id' => null,
         'cidr' => '@vpc.network@/@vpc.netmask@',
+        'subnet_netmask' => '@vpc.subnet_netmask@',
         'internet_gateway' => [
             'name' => '@app.prefix@-igw',
             'id' => null,
@@ -16,7 +17,7 @@ return
         'nat_gateways' => [
             'natgw-aws-az1' => [
                 'name' => '@app.prefix@-natgw-az1',
-                'subnet_key' => 'public-awz-az1',
+                'subnet_key' => 'public-aws-az1',
                 'elastic_ip' => null,
                 'id' => null,
             ],

@@ -5,6 +5,7 @@ namespace Uxmal\Devtools\Traits\AWS;
 use Aws\Ec2\Ec2Client;
 use Aws\Exception\AwsException;
 use Aws\Result;
+use Exception;
 
 trait EC2Utils
 {
@@ -356,6 +357,8 @@ trait EC2Utils
             if ($isDryRun && $e->getAwsErrorCode() === 'DryRunOperation') {
                 $this->info('[routeTableExists] Dry run successful. You have the necessary permissions.');
             }
+        } catch (Exception $e) {
+
         }
 
         return false;
@@ -743,9 +746,17 @@ trait EC2Utils
             // Checking if the desired route with the specified gateway is present
             foreach ($result['RouteTables'] as $routeTable) {
                 foreach ($routeTable['Routes'] as $route) {
-                    if ($route['DestinationCidrBlock'] === $destinationCidr && $route['GatewayId'] === $gatewayId) {
-                        // Route with the specified gateway found
-                        return true;
+                    if (array_key_exists('GatewayId', $route)) {
+                        if ($route['DestinationCidrBlock'] === $destinationCidr && $route['GatewayId'] === $gatewayId) {
+                            // Route with the specified gateway found
+                            return true;
+                        }
+                    }
+                    if (array_key_exists('NatGatewayId', $route)) {
+                        if ($route['DestinationCidrBlock'] === $destinationCidr && $route['NatGatewayId'] === $gatewayId) {
+                            // Route with the specified gateway found
+                            return true;
+                        }
                     }
                 }
             }

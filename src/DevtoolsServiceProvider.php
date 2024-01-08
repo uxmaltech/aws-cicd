@@ -4,7 +4,7 @@ namespace Uxmal\Devtools;
 
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
-use Uxmal\Devtools\Command\Aws\CreateInfrastructureCommand;
+use Uxmal\Devtools\Command\Aws\DeployInfrastructureCommand;
 use Uxmal\Devtools\Command\Aws\ECRDockerLoginCommand;
 use Uxmal\Devtools\Command\Aws\ECRListRepositoriesCommand;
 use Uxmal\Devtools\Command\Aws\ECRPushToRepositoryCommand;
@@ -56,7 +56,7 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
                 ECRPushToRepositoryCommand::class,
                 ECRListRepositoriesCommand::class,
                 ECRDockerLoginCommand::class,
-                CreateInfrastructureCommand::class,
+                DeployInfrastructureCommand::class,
             ]);
         }
     }
@@ -101,7 +101,7 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
             ECRPushToRepositoryCommand::class,
             ECRListRepositoriesCommand::class,
             ECRDockerLoginCommand::class,
-            CreateInfrastructureCommand::class,
+            DeployInfrastructureCommand::class,
         ];
     }
 }

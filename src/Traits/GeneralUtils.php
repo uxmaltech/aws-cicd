@@ -193,16 +193,6 @@ trait GeneralUtils
     {
         $this->devMode = config('uxmaltech.dev_mode', false);
 
-        if (! is_dir($this->laravel->basePath('docker-images'))) {
-            $this->error('Docker images folder not found. Please run "php artisan devtools:install" first.');
-            exit(0);
-        }
-
-        if (! file_exists($this->laravel->configPath('uxmaltech.php'))) {
-            $this->error('config/uxmaltech.php file not found. Please run "php artisan devtools:install" first.');
-            exit(0);
-        }
-
         if ($this->hasPendingGitCommits($this->laravel->basePath()) && ! $this->devMode) {
             $this->warn('El directorio de trabajo tiene cambios pendientes. Por favor, utilize <comment>git commit</comment> o <comment>stash</comment>');
             if (! $this->confirm('¿Deseas continuar?', true)) {
