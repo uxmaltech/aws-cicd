@@ -69,20 +69,14 @@ class BuildUxmalTechConfigCommand extends Command
 
         switch ($app_mode_type) {
             case InfraTypeEnum::nginx_phpfpm_2->value:
-                $app_mode_template = __DIR__.'/Stubs/tmpl-nginx-php-fpm.php';
-                $docker_template = __DIR__.'/Stubs/tmpl-nginx-phpfpm-2-docker.php';
                 $app_mode = 'nginx-phpfpm-2';
                 $service_ports = ['http' => 80, 'https' => '443'];
                 break;
             case InfraTypeEnum::apache_php->value:
-                $app_mode_template = __DIR__.'/Stubs/tmpl-apache-php.php';
-                $docker_template = __DIR__.'/Stubs/tmpl-apache-php-docker.php';
                 $app_mode = 'apache-php';
                 $service_ports = ['http' => 80, 'https' => '443'];
                 break;
             case InfraTypeEnum::artisan_php->value:
-                $app_mode_template = __DIR__.'/Stubs/tmpl-artisan-php.php';
-                $docker_template = __DIR__.'/Stubs/tmpl-artisan-php-fpm-docker.php';
                 $app_mode = 'artisan-php';
                 $service_ports = ['http' => 8000];
                 break;

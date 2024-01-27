@@ -18,4 +18,20 @@ return [
         'latest-base-image' => null,
         'latest-app-image' => null,
     ],
+    'apache-php' => [
+        'push-base-image' => @ecr.apache-php.base-push@,
+        'base-image' => '@ecr.apache-php.base-image@',
+        'app-image' => '@ecr.apache-php.image@',
+        'exposed-port' => '80/tcp',
+        'latest-base-image' => null,
+        'latest-app-image' => null,
+    ],
+    'artisan-php' => [
+        'push-base-image' => @ecr.artisan-php.base-push@,
+        'base-image' => '@ecr.artisan-php.base-image@',
+        'app-image' => '@ecr.artisan-php.image@',
+        'exposed-port' => '8000/tcp',
+        'latest-base-image' => null,
+        'latest-app-image' => null,
+    ],
 ];
