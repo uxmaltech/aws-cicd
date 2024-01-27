@@ -511,7 +511,7 @@ trait GeneralUtils
         // Execute the process
 
         $process->setTimeout(3600);
-        $process->setIdleTimeout(60);
+        $process->setIdleTimeout(600);
 
         if (! empty($cwd)) {
             $process->setWorkingDirectory($cwd);

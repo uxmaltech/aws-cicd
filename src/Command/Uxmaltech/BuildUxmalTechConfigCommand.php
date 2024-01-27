@@ -49,9 +49,9 @@ class BuildUxmalTechConfigCommand extends Command
                 exit(1);
             }
         } catch (ProcessFailedException $exception) {
-            $this->warn('An error occurred: '.$exception->getMessage());
+            $this->warn('An error occurred: ' . $exception->getMessage());
         } catch (RandomException $e) {
-            $this->warn('An error occurred: '.$e->getMessage());
+            $this->warn('An error occurred: ' . $e->getMessage());
         }
         system('clear');
         $this->buildUxmalTech();
@@ -64,7 +64,7 @@ class BuildUxmalTechConfigCommand extends Command
         $options = InfraTypeEnum::cases();
         $app_mode_type = $this->choice(
             'Escoje la estrategia de dockerización para tu applicación de laravel',
-            array_map(fn ($option) => $option->value, $options),
+            array_map(fn($option) => $option->value, $options),
             $defaultIndex = 0);
 
         switch ($app_mode_type) {
@@ -72,32 +72,32 @@ class BuildUxmalTechConfigCommand extends Command
                 $app_mode_template = __DIR__.'/Stubs/tmpl-nginx-php-fpm.php';
                 $docker_template = __DIR__.'/Stubs/tmpl-nginx-phpfpm-2-docker.php';
                 $app_mode = 'nginx-phpfpm-2';
-                $service_ports = config('uxmaltech.service_ports', ['http' => 80, 'https' => '443']);
+                $service_ports = ['http' => 80, 'https' => '443'];
                 break;
             case InfraTypeEnum::apache_php->value:
                 $app_mode_template = __DIR__.'/Stubs/tmpl-apache-php.php';
                 $docker_template = __DIR__.'/Stubs/tmpl-apache-php-docker.php';
                 $app_mode = 'apache-php';
-                $service_ports = config('uxmaltech.service_ports', ['http' => 80, 'https' => '443']);
+                $service_ports = ['http' => 80, 'https' => '443'];
                 break;
             case InfraTypeEnum::artisan_php->value:
                 $app_mode_template = __DIR__.'/Stubs/tmpl-artisan-php.php';
                 $docker_template = __DIR__.'/Stubs/tmpl-artisan-php-fpm-docker.php';
                 $app_mode = 'artisan-php';
-                $service_ports = config('uxmaltech.service_ports', []);
+                $service_ports = ['http' => 8000];
                 break;
             default:
                 $this->error('Opción no implementada');
                 exit(1);
         }
 
-        $this->line('<info>Creando configuración para</info> [<comment>'.$app_mode_type.'</comment>]:');
+        $this->line('<info>Creando configuración para</info> [<comment>' . $app_mode_type . '</comment>]:');
         $this->newLine();
 
         $app_name = $this->ask('Nombre de la aplicación', config('uxmaltech.name', config('app.name')));
         $app_domain = $this->ask('Dominio de la aplicación', config('uxmaltech.domain', parse_url(config('app.url'), PHP_URL_HOST)));
         $app_subdomain = $this->ask('Subdominio de la aplicación', config('uxmaltech.subdomain', config('app.name')));
-        $app_internal_domain = str_replace('.', '-', $app_domain).'.intranet';
+        $app_internal_domain = str_replace('.', '-', $app_domain) . '.intranet';
 
         $app_prefix = $this->ask('Prefijo de la aplicación', config('uxmaltech.prefix', 'uxdt'));
         $app_key = $this->ask('Llave de la aplicación', config('uxmaltech.key', config('app.key')));
@@ -122,7 +122,7 @@ class BuildUxmalTechConfigCommand extends Command
         ];
 
         $this->table($headers, $variablesTable);
-        if (! $this->confirm('¿Es correcto?')) {
+        if (!$this->confirm('¿Es correcto?')) {
             $this->error('Abortando...');
             exit(1);
         }
@@ -157,13 +157,13 @@ class BuildUxmalTechConfigCommand extends Command
             $app_feature_aws_ecs ? 'true' : 'false',
         ];
 
-        $template = __DIR__.'/Stubs/tmpl-uxmaltech.php';
+        $template = __DIR__ . '/Stubs/tmpl-uxmaltech.php';
 
         $config = file_get_contents($template);
         $config = str_replace($search, $replace, $config);
 
         file_put_contents(config_path('uxmaltech.php'), $config);
 
-        system(base_path('./vendor/bin/pint').' '.config_path('uxmaltech.php'));
+        system(base_path('./vendor/bin/pint') . ' ' . config_path('uxmaltech.php'));
     }
 }

@@ -6,8 +6,10 @@ return [
     'subdomain' => '@app.subdomain@',
     'internal_domain' => '@app.internal_domain@',
     'mode' => '@app.mode@',
-    'dev_mode' => true,
+    'git-hub-personal-access-token' => env('GITHUB_PERSONAL_ACCESS_TOKEN'),
     'service_ports' => @app.service.ports@,
+    'dev_mode' => true,
+    'debug_mode' => true,
     'key' => env('APP_KEY'),
     'db' => [
         'engine' => env('DB_CONNECTION'),
