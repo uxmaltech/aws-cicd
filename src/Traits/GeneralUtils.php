@@ -510,8 +510,8 @@ trait GeneralUtils
         $process = new Process(array_merge(['composer'], $args));
         // Execute the process
 
-        $process->setTimeout(3600);
-        $process->setIdleTimeout(600);
+        $process->setTimeout(36000);
+        $process->setIdleTimeout(36000);
 
         if (! empty($cwd)) {
             $process->setWorkingDirectory($cwd);

@@ -1,0 +1,11 @@
+version: '3.2'
+services:
+  ${ECR_ARTISAN_PHP_SERVICE_DN}:
+    build:
+      context: .
+      dockerfile: ./docker-images/build/docker/artisan-php/Dockerfile
+    image: ${ECR_ARTISAN_PHP_APP_IMAGE_TAG}
+    working_dir: /var/www/html
+    command: php artisan serve --host 0.0.0.0
+    ports:
+      - "${ECR_ARTISAN_PHP_PORT}:${ECR_ARTISAN_PHP_PORT}"

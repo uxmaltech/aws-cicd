@@ -3,9 +3,12 @@
 namespace Uxmal\Devtools\Command;
 
 use Illuminate\Console\Command;
+use Uxmal\Devtools\Traits\GeneralUtils;
 
 class InstallCommand extends Command
 {
+    use GeneralUtils;
+
     /**
      * The console command name.
      *
@@ -63,8 +66,6 @@ class InstallCommand extends Command
         if ($uxmaltech_features_aws_ecs_managed == 'yes') {
             $this->call('devtools:build-aws-ecs-config', []);
         }
-
-        exit(0);
 
         // Check if have a protected packages from uxmal.
         $this->checkProtectedPackages();

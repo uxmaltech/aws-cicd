@@ -1,0 +1,16 @@
+# Use Alpine Linux
+FROM ${ECR_ARTISAN_PHP_LATEST_BASE_IMAGE}
+
+# Install dependencies
+COPY docker-images/build/${UXMALTECH_APP_NAME} /var/www/html
+
+RUN chown -R www-data:www-data /var/www/html
+
+RUN mkdir -p /var/www/html/storage/framework/sessions
+RUN mkdir -p /var/www/html/storage/framework/views
+RUN mkdir -p /var/www/html/storage/framework/cache
+
+RUN chmod -R 777 /var/www/html/storage
+RUN chmod -R 777 /var/www/html/bootstrap/cache
+
+EXPOSE ${ECR_ARTISAN_PHP_PORT}

@@ -1,0 +1,33 @@
+# Use Alpine Linux
+FROM ${ECR_APACHE_PHP_LATEST_BASE_IMAGE}
+
+# Install dependencies
+COPY docker-images/build/docker/conf/apache.conf /etc/apache2/sites-available/000-default.conf
+COPY docker-images/build/${UXMALTECH_APP_NAME} /var/www/html
+
+RUN chown -R www-data:www-data /var/www/html
+
+RUN mkdir -p /var/www/html/storage/framework/sessions
+RUN mkdir -p /var/www/html/storage/framework/views
+RUN mkdir -p /var/www/html/storage/framework/cache
+
+RUN chmod -R 777 /var/www/html/storage
+RUN chmod -R 777 /var/www/html/bootstrap/cache
+
+# Enable Apache modules and restart
+RUN a2enmod rewrite \
+ && a2enmod headers \
+ && sed -E -i -e 's/max_file_uploads = 20/max_file_uploads = 256/' /usr/local/etc/php/php.ini-development \
+ && sed -E -i -e 's/; max_input_vars = 1000/max_input_vars = 1000000/' /usr/local/etc/php/php.ini-development \
+ && sed -E -i -e 's/post_max_size = 8M/post_max_size = 512M/' /usr/local/etc/php/php.ini-development \
+ && sed -E -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 256M/' /usr/local/etc/php/php.ini-development \
+ && sed -E -i -e 's/memory_limit = 128M/memory_limit = -1/' /usr/local/etc/php/php.ini-development \
+ && sed -E -i -e 's/max_file_uploads = 20/max_file_uploads = 256/' /usr/local/etc/php/php.ini-production \
+ && sed -E -i -e 's/; max_input_vars = 1000/max_input_vars = 1000000/' /usr/local/etc/php/php.ini-production \
+ && sed -E -i -e 's/post_max_size = 8M/post_max_size = 512M/' /usr/local/etc/php/php.ini-production \
+ && sed -E -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 256M/' /usr/local/etc/php/php.ini-production \
+ && sed -E -i -e 's/memory_limit = 128M/memory_limit = -1/' /usr/local/etc/php/php.ini-production \
+ && cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini \
+ && service apache2 restart
+
+EXPOSE ${ECR_APACHE_PHP_PORT}

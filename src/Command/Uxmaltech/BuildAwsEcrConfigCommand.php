@@ -46,7 +46,7 @@ class BuildAwsEcrConfigCommand extends Command
         $this->newLine();
 
         $app_name = config('uxmaltech.name', config('APP_NAME', 'laravel'));
-        $app_mode = config('uxmaltech.mode', config('APP_MODE', 'php-fpm'));
+        $app_mode = config('uxmaltech.mode', config('APP_MODE', 'nginx-phpfpm-2'));
 
         $ecr_proxy = $this->ask('AWS ECR Proxy', '{AWS_ACCOUNT_ID}.dkr.ecr.{AWS_REGION}.amazonaws.com');
         switch ($app_mode) {
@@ -56,8 +56,8 @@ class BuildAwsEcrConfigCommand extends Command
                 $ecr_php_fpm_image = $this->ask('Tag de la imagen de php-fpm', $app_name . '-php-fpm');
 
                 $ecr_nginx_push = $this->confirm('Enable pushing base-images nginx');
-                $ecr_nginx_base_image = $this->ask('Tag de la imagen base de php-fpm', 'nginx:1.24-alpine:3.19');
-                $ecr_nginx_image = $this->ask('Tag de la imagen de php-fpm', $app_name . '-nginx');
+                $ecr_nginx_base_image = $this->ask('Tag de la imagen base de nginx', 'nginx:1.24-alpine:3.19');
+                $ecr_nginx_image = $this->ask('Tag de la imagen de nginx', $app_name . '-nginx');
 
                 $variablesTable = [
                     ['ecr.proxy', $ecr_proxy],
@@ -90,9 +90,9 @@ class BuildAwsEcrConfigCommand extends Command
                 ];
                 break;
             case 'apache-php':
-                $ecr_apache_php_push = $this->confirm('Enable pushing base-images nginx');
-                $ecr_apache_php_base_image = $this->ask('Tag de la imagen base de php-fpm', 'nginx:1.24-alpine:3.19');
-                $ecr_apache_php_image = $this->ask('Tag de la imagen de php-fpm', $app_name . '-nginx');
+                $ecr_apache_php_push = $this->confirm('Enable pushing base-images apache-php');
+                $ecr_apache_php_base_image = $this->ask('Tag de la imagen base de apache-php', 'php:8.2.13-apache');
+                $ecr_apache_php_image = $this->ask('Tag de la imagen de apache-php', $app_name . '-apache');
 
                 $variablesTable = [
                     ['ecr.proxy', $ecr_proxy],
@@ -116,9 +116,9 @@ class BuildAwsEcrConfigCommand extends Command
                 ];
                 break;
             case 'artisan-php':
-                $ecr_artisan_php_push = $this->confirm('Enable pushing base-images nginx');
-                $ecr_artisan_php_base_image = $this->ask('Tag de la imagen base de php-fpm', 'nginx:1.24-alpine:3.19');
-                $ecr_artisan_php_image = $this->ask('Tag de la imagen de php-fpm', $app_name . '-nginx');
+                $ecr_artisan_php_push = $this->confirm('Enable pushing base-images artisan-php');
+                $ecr_artisan_php_base_image = $this->ask('Tag de la imagen base de artisan-php', 'php:8.2.13');
+                $ecr_artisan_php_image = $this->ask('Tag de la imagen de artisan-php', $app_name . '-apache');
 
                 $variablesTable = [
                     ['ecr.proxy', $ecr_proxy],
@@ -150,7 +150,7 @@ class BuildAwsEcrConfigCommand extends Command
             exit(1);
         }
 
-        $config = file_get_contents(__DIR__ . '/Stubs/tmpl-aws-ecr.php');
+        $config = file_get_contents(__DIR__ . "/Stubs/tmpl-aws-ecr-{$app_mode}.php");
         $config = str_replace($search, $replace, $config);
 
         if (file_exists(config_path('aws-ecr.php'))) {
