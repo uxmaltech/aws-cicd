@@ -17,10 +17,6 @@ trait GeneralUtils
 {
     protected string $configFile = 'aws-cicd.php';
 
-    protected string $alpineVersion;
-
-    protected string $phpVersion;
-
     protected string $imagesUsername;
 
     protected string $imagesTag;
@@ -287,8 +283,6 @@ trait GeneralUtils
         /*
          * EO Set Environment Variables
          */
-        $this->alpineVersion = config('aws-cicd.images.alpineVersion', '3.19');
-        $this->phpVersion = config('aws-cicd.images.phpVersion', '0.2');
         $this->imagesUsername = config('aws-cicd.images.username', 'uxmaltech');
         $this->imagesTag = config('aws-cicd.images.tag', 'latest');
 

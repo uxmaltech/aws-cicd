@@ -1,5 +1,8 @@
+ARG ALPINE_VERSION="3.19"
+ARG PHP_VERSION="8.2.15"
+
 # Use Alpine Linux
-FROM alpine:3.19
+FROM alpine:${ALPINE_VERSION}
 
 # Declare maintainer
 LABEL \
@@ -30,10 +33,9 @@ RUN	apk update && \
 	rm -rf /var/cache/apk/*
 
 # Expose volumes
-VOLUME ["/etc/nginx/conf.d", "/var/log/nginx", "/www"]
+EXPOSE 80
 
-# Expose ports
-EXPOSE 8000
+STOPSIGNAL SIGQUIT
 
-# Entry point
-ENTRYPOINT ["/usr/sbin/nginx", "-g", "daemon off; error_log /dev/stdout info;"]
+# To start apache in the background as a service
+CMD ["/bin/sh"]

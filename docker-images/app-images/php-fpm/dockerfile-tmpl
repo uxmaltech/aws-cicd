@@ -20,4 +20,17 @@ ENV PHP_MEMORY_LIMIT=512M
 ENV PHP_EXPOSE_PHP=On
 ENV PHP_SESSION_GC_MAXLIFETIME=1440
 
+# Copy PHP-FPM configuration files
+COPY php-fpm/php-fpm.tmpl.conf /var/data/php-fpm/php-fpm.tmpl.conf
+COPY php-fpm/www.tmpl.conf /var/data/php-fpm/www.tmpl.conf
+COPY php-fpm/default-php.tmpl.ini /var/data/php-fpm/default-php.tmpl.ini
+
+
+# Copy util scripts
+COPY bash/envsubst.sh /envsubst.sh
+COPY bash/entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+RUN chmod +x /envsubst.sh
+
 EXPOSE ${ECR_PHP_FPM_PORT}

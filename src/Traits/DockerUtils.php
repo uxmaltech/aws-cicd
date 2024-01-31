@@ -6,6 +6,31 @@ use Docker\Docker;
 
 trait DockerUtils
 {
+    protected string $alpineVersion = '3.19';
+    protected string $phpVersion = '8.2.15';
+    protected string $nginxVersion = '1.24';
+    protected string $apacheVersion = '2.4.52';
+
+    protected function getPHPFpmImage(): string
+    {
+        return "php:{$this->phpVersion}-fpm-alpine:{$this->alpineVersion}";
+    }
+
+    protected function getNginxImage(): string
+    {
+        return "nginx:{$this->nginxVersion}-alpine:{$this->alpineVersion}";
+    }
+
+    protected function getApacheImage(): string
+    {
+        return "httpd:{$this->apacheVersion}-alpine:{$this->alpineVersion}";
+    }
+
+    protected function getPhpCliImage(): string
+    {
+        return "php:{$this->phpVersion}-cli-alpine:{$this->alpineVersion}";
+    }
+
     protected function dockerImageList(): array
     {
         $docker = Docker::create();

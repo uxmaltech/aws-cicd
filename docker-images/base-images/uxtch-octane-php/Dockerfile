@@ -1,18 +1,24 @@
 ARG ALPINE_VERSION="3.19"
 ARG PHP_VERSION="8.2.15"
 
-FROM php:${PHP_VERSION}-fpm-alpine${ALPINE_VERSION}
+FROM php:${PHP_VERSION}-zts-alpine${ALPINE_VERSION}
+
+ARG MAINTAINER="Enrique Martinez <https://uxmal.tech>"
+ARG DESCRIPTION="Apache PHP v${PHP_VERSION} with extensions on top of Alpine Linux v${ALPINE_VERSION}."
+
+ENV PHP_VERSION=${PHP_VERSION}
+ENV ALPINE_VERSION=${ALPINE_VERSION}
 
 LABEL \
-    Maintainer="Enrique Martinez <https://uxmal.tech>" \
-    Description="PHP-FPM v8.2 with extensions on top of Alpine Linux."
+    Maintainer=${MAINTAINER} \
+    Description=${DESCRIPTION}
 
 # Composer - https://getcomposer.org/download/
 ARG COMPOSER_VERSION="2.6.6"
 ARG COMPOSER_SUM="72600201c73c7c4b218f1c0511b36d8537963e36aafa244757f52309f885b314"
 
 # Swoole - https://github.com/swoole/swoole-src
-ARG SWOOLE_VERSION="5.1.1"
+ARG SWOOLE_VERSION="5.1.2"
 
 # Install dependencies
 RUN set -eux \
@@ -314,32 +320,24 @@ RUN set -eux \
     && composer --version \
     && true
 
+
 RUN set -eux \
-# PHP-FPM templates directory
-    && mkdir -p /var/data/php-fpm \
 # Remove few PHP-FPM default config files
     && rm -rf /usr/local/etc/php-fpm.d/zz-docker.conf \
     && rm -rf /usr/local/etc/php-fpm.d/docker.conf \
 \
-# Perform PHP-FPM testing
+# Perform PHP-CLI testing
     && echo "Performing PHP-FPM tests..." \
     && echo "date.timezone=UTC" > /usr/local/etc/php/php.ini \
     && php -v | grep -oE 'PHP\s[.0-9]+' | grep -oE '[.0-9]+' | grep '^8.2' \
-    && /usr/local/sbin/php-fpm --test \
 \
     && PHP_ERROR="$( php -v 2>&1 1>/dev/null )" \
     && if [ -n "${PHP_ERROR}" ]; then echo "${PHP_ERROR}"; false; fi \
     && PHP_ERROR="$( php -i 2>&1 1>/dev/null )" \
     && if [ -n "${PHP_ERROR}" ]; then echo "${PHP_ERROR}"; false; fi \
-\
-    && PHP_FPM_ERROR="$( php-fpm -v 2>&1 1>/dev/null )" \
-    && if [ -n "${PHP_FPM_ERROR}" ]; then echo "${PHP_FPM_ERROR}"; false; fi \
-    && PHP_FPM_ERROR="$( php-fpm -i 2>&1 1>/dev/null )" \
-    && if [ -n "${PHP_FPM_ERROR}" ]; then echo "${PHP_FPM_ERROR}"; false; fi \
     && rm -f /usr/local/etc/php/php.ini \
     && true
 
-EXPOSE 9000
 
 STOPSIGNAL SIGQUIT
 
