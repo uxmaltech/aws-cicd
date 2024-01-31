@@ -1,0 +1,5 @@
+'nginx' => [
+    'base-image' => '@docker.nginx.base-image@',
+    'app-image' => '@docker.nginx.image@',
+    'exposed-port' => '80/tcp',
+    ],
