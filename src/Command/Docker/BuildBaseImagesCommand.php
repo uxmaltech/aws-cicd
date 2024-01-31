@@ -11,7 +11,7 @@ use Uxmal\Devtools\Traits\GeneralUtils;
 
 class BuildBaseImagesCommand extends Command
 {
-    use GeneralUtils, DockerUtils;
+    use DockerUtils, GeneralUtils;
 
     /**
      * The console command name.
@@ -51,7 +51,7 @@ class BuildBaseImagesCommand extends Command
     #[NoReturn]
     protected function buildDockerImage(): void
     {
-        $this->line('Building the base docker image for ' . config('uxmaltech.name') . ' ...');
+        $this->line('Building the base docker image for '.config('uxmaltech.name').' ...');
         $this->newLine();
 
         $headers = ['Variable', 'Contenido'];
@@ -62,8 +62,8 @@ class BuildBaseImagesCommand extends Command
         $hours = date('G');   // Hours since midnight (0-23)
         $minutes = date('i'); // Minutes (00-59)
         $seconds = date('s'); // Seconds (00-59)
-        $secondsOfDay = ((int)$hours * 3600) + ((int)$minutes * 60) . (int)$seconds;
-        $versionString = $currentDate . $hours . $minutes . $seconds;
+        $secondsOfDay = ((int) $hours * 3600) + ((int) $minutes * 60).(int) $seconds;
+        $versionString = $currentDate.$hours.$minutes.$seconds;
 
         /**
          * $alpineVersion = '3.19';
@@ -71,13 +71,12 @@ class BuildBaseImagesCommand extends Command
          * $nginxVersion = '1.24';
          * $apacheVersion = '2.4.52';
          */
-
         $envTable = [];
-        $apache_php_base_image = $prefix . '-apache' . $this->apacheVersion . '-php' . $this->phpVersion . '-alpine' . $this->alpineVersion;
-        $nginx_base_image = $prefix . '-nginx' . $this->nginxVersion . '-alpine' . $this->alpineVersion;
-        $php_fpm_image = $prefix . '-php-fpm' . $this->phpVersion . '-alpine' . $this->alpineVersion;
-        $php_cli_octane_image = $prefix . '-php-' . $this->phpVersion . '-octane-alpine' . $this->alpineVersion;
-        $php_cli_image = $prefix . '-php-cli-' . $this->phpVersion . '-alpine' . $this->alpineVersion;
+        $apache_php_base_image = $prefix.'-apache'.$this->apacheVersion.'-php'.$this->phpVersion.'-alpine'.$this->alpineVersion;
+        $nginx_base_image = $prefix.'-nginx'.$this->nginxVersion.'-alpine'.$this->alpineVersion;
+        $php_fpm_image = $prefix.'-php-fpm'.$this->phpVersion.'-alpine'.$this->alpineVersion;
+        $php_cli_octane_image = $prefix.'-php-'.$this->phpVersion.'-octane-alpine'.$this->alpineVersion;
+        $php_cli_image = $prefix.'-php-cli-'.$this->phpVersion.'-alpine'.$this->alpineVersion;
         $dockerizedImages = config('dockerized.images');
 
         $envTable = array_merge($envTable, [
@@ -93,7 +92,7 @@ class BuildBaseImagesCommand extends Command
 
         $this->table($headers, $envTable);
 
-        if (!$this->confirm('¿Es correcto, proceder a la creación de la VPC?')) {
+        if (! $this->confirm('¿Es correcto, proceder a la creación de la VPC?')) {
             $this->error('Abortando...');
             exit(1);
         }
@@ -123,91 +122,91 @@ class BuildBaseImagesCommand extends Command
 
     private function buildApachePhpImage($image, $versionString): void
     {
-        $workDir = __DIR__ . '/base-images/uxtch-apache-php/';
-        if (!is_dir($workDir)) {
+        $workDir = __DIR__.'/base-images/uxtch-apache-php/';
+        if (! is_dir($workDir)) {
             $this->error('The directory docker-images/base-images/uxtch-apache-php does not exists.');
             exit(1);
         }
         $this->info("Build Image: $image Tag: $versionString");
 
-        $this->runDockerCmd(['build', '.', '-t', $image . ':' . $versionString], $workDir);
+        $this->runDockerCmd(['build', '.', '-t', $image.':'.$versionString], $workDir);
 
-        $this->runDockerCmd(['tag', $image . ':' . $versionString, $image . ':latest'], $workDir);
+        $this->runDockerCmd(['tag', $image.':'.$versionString, $image.':latest'], $workDir);
 
         $this->info("Docker image built $image:$versionString successfully.");
 
-        $this->replaceConfigKey('images.apache-php.base-image', $image . ':' . $versionString, true, config_path('dockerized.php') );
+        $this->replaceConfigKey('images.apache-php.base-image', $image.':'.$versionString, true, config_path('dockerized.php'));
     }
 
     private function buildNginxImage($image, $versionString): void
     {
-        $workDir = __DIR__ . '/base-images/uxtch-nginx/';
-        if (!is_dir($workDir)) {
+        $workDir = __DIR__.'/base-images/uxtch-nginx/';
+        if (! is_dir($workDir)) {
             $this->error('The directory docker-images/base-images/uxtch-nginx does not exists.');
             exit(1);
         }
         $this->info("Build Image: $image Tag: $versionString");
 
-        $this->runDockerCmd(['build', '.', '-t', $image . ':' . $versionString], $workDir);
+        $this->runDockerCmd(['build', '.', '-t', $image.':'.$versionString], $workDir);
 
-        $this->runDockerCmd(['tag', $image . ':' . $versionString, $image . ':latest'], $workDir);
+        $this->runDockerCmd(['tag', $image.':'.$versionString, $image.':latest'], $workDir);
 
         $this->info("Docker image built $image:$versionString successfully.");
 
-        $this->replaceConfigKey('images.nginx.base-image', $image . ':' . $versionString, true, config_path('dockerized.php') );
+        $this->replaceConfigKey('images.nginx.base-image', $image.':'.$versionString, true, config_path('dockerized.php'));
     }
 
     private function buildPhpFpmImage($image, $versionString): void
     {
-        $workDir = __DIR__ . '/base-images/uxtch-php-fpm/';
-        if (!is_dir($workDir)) {
+        $workDir = __DIR__.'/base-images/uxtch-php-fpm/';
+        if (! is_dir($workDir)) {
             $this->error('The directory docker-images/base-images/uxtch-php-fpm does not exists.');
             exit(1);
         }
         $this->info("Build Image: $image Tag: $versionString");
 
-        $this->runDockerCmd(['build', '.', '-t', $image . ':' . $versionString], $workDir);
+        $this->runDockerCmd(['build', '.', '-t', $image.':'.$versionString], $workDir);
 
-        $this->runDockerCmd(['tag', $image . ':' . $versionString, $image . ':latest'], $workDir);
+        $this->runDockerCmd(['tag', $image.':'.$versionString, $image.':latest'], $workDir);
 
         $this->info("Docker image built $image:$versionString successfully.");
 
-        $this->replaceConfigKey('images.php-fpm.base-image', $image . ':' . $versionString, true, config_path('dockerized.php') );
+        $this->replaceConfigKey('images.php-fpm.base-image', $image.':'.$versionString, true, config_path('dockerized.php'));
     }
 
     private function buildPhpCliOctaneImage($image, $versionString): void
     {
-        $workDir = __DIR__ . '/base-images/uxtch-php-cli-octane/';
-        if (!is_dir($workDir)) {
+        $workDir = __DIR__.'/base-images/uxtch-php-cli-octane/';
+        if (! is_dir($workDir)) {
             $this->error('The directory docker-images/base-images/uxtch-php-cli-octane does not exists.');
             exit(1);
         }
         $this->info("Build Image: $image Tag: $versionString");
 
-        $this->runDockerCmd(['build', '.', '-t', $image . ':' . $versionString], $workDir);
+        $this->runDockerCmd(['build', '.', '-t', $image.':'.$versionString], $workDir);
 
-        $this->runDockerCmd(['tag', $image . ':' . $versionString, $image . ':latest'], $workDir);
+        $this->runDockerCmd(['tag', $image.':'.$versionString, $image.':latest'], $workDir);
 
         $this->info("Docker image built $image:$versionString successfully.");
 
-        $this->replaceConfigKey('images.php-octane.base-image', $image . ':' . $versionString, true, config_path('dockerized.php') );
+        $this->replaceConfigKey('images.php-octane.base-image', $image.':'.$versionString, true, config_path('dockerized.php'));
     }
 
     private function buildPhpCliImage($image, $versionString): void
     {
-        $workDir = __DIR__ . '/base-images/uxtch-php-cli/';
-        if (!is_dir($workDir)) {
+        $workDir = __DIR__.'/base-images/uxtch-php-cli/';
+        if (! is_dir($workDir)) {
             $this->error('The directory docker-images/base-images/uxtch-php-cli does not exists.');
             exit(1);
         }
         $this->info("Build Image: $image Tag: $versionString");
 
-        $this->runDockerCmd(['build', '.', '-t', $image . ':' . $versionString], $workDir);
+        $this->runDockerCmd(['build', '.', '-t', $image.':'.$versionString], $workDir);
 
-        $this->runDockerCmd(['tag', $image . ':' . $versionString, $image . ':latest'], $workDir);
+        $this->runDockerCmd(['tag', $image.':'.$versionString, $image.':latest'], $workDir);
 
         $this->info("Docker image built $image:$versionString successfully.");
 
-        $this->replaceConfigKey('dockerized.images.php-cli.base-image', $image . ':' . $versionString, true, config_path('dockerized.php') );
+        $this->replaceConfigKey('dockerized.images.php-cli.base-image', $image.':'.$versionString, true, config_path('dockerized.php'));
     }
 }
