@@ -435,8 +435,7 @@ trait GeneralUtils
                 } elseif ($composerGlobalAccessToken === $this->personalAccessToken) {
                     $this->line('Personal Access Token already added.'."\t\t".'[<comment>OK</comment>]');
                 } else {
-                    $this->error('Personal Access Token already added to composer global config but is different.');
-                    exit(1);
+                    $this->warn('Personal Access Token already added to composer global config but is different.');
                 }
 
             }

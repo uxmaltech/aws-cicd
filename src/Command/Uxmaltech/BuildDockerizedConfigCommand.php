@@ -10,7 +10,7 @@ use Uxmal\Devtools\Traits\GeneralUtils;
 
 class BuildDockerizedConfigCommand extends Command
 {
-    use GeneralUtils, DockerUtils;
+    use DockerUtils, GeneralUtils;
 
     /**
      * The console command name.
@@ -18,7 +18,6 @@ class BuildDockerizedConfigCommand extends Command
      * @var string
      */
     protected $signature = 'devtools:build-dockerized-config';
-
 
     public function __construct()
     {
@@ -33,9 +32,9 @@ class BuildDockerizedConfigCommand extends Command
                 exit(1);
             }
         } catch (ProcessFailedException $exception) {
-            $this->warn('An error occurred: ' . $exception->getMessage());
+            $this->warn('An error occurred: '.$exception->getMessage());
         } catch (RandomException $e) {
-            $this->warn('An error occurred: ' . $e->getMessage());
+            $this->warn('An error occurred: '.$e->getMessage());
         }
         system('clear');
         $this->buildDockerizedConfig();
@@ -43,7 +42,6 @@ class BuildDockerizedConfigCommand extends Command
 
     private function buildDockerizedConfig(): void
     {
-
 
         $php_fpm_image = $this->getPHPFpmImage();
         $nginx_image = $this->getNginxImage();
@@ -55,7 +53,6 @@ class BuildDockerizedConfigCommand extends Command
         $this->newLine();
 
         $app_name = config('uxmaltech.name', config('APP_NAME', 'laravel'));
-
 
         $headers = ['Variable', 'Valor'];
         $variablesTable = [

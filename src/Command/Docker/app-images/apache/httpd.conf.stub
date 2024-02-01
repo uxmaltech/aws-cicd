@@ -13,6 +13,7 @@ LoadModule auth_basic_module modules/mod_auth_basic.so
 LoadModule reqtimeout_module modules/mod_reqtimeout.so
 LoadModule filter_module modules/mod_filter.so
 LoadModule mime_module modules/mod_mime.so
+LoadModule rewrite_module modules/mod_rewrite.so
 LoadModule log_config_module modules/mod_log_config.so
 LoadModule env_module modules/mod_env.so
 LoadModule headers_module modules/mod_headers.so
@@ -35,17 +36,48 @@ LoadModule negotiation_module modules/mod_negotiation.so
 User apache
 Group apache
 </IfModule>
-ServerAdmin you@example.com
+ServerAdmin $UXMALTECH_AUTHOR_EMAIL
 ServerSignature On
+
 <Directory />
     AllowOverride none
     Require all denied
 </Directory>
-DocumentRoot "/www"
+
+DocumentRoot "/www/public"
+
 <Directory "/www">
     Options Indexes MultiViews FollowSymLinks
     AllowOverride None
     Require all granted
+</Directory>
+
+<Directory "/www/public">
+    Options MultiViews FollowSymLinks
+    AllowOverride None
+    Require all granted
+
+    <IfModule mod_rewrite.c>
+        <IfModule mod_negotiation.c>
+            Options -MultiViews -Indexes
+        </IfModule>
+
+        RewriteEngine On
+
+        # Handle Authorization Header
+        RewriteCond %{HTTP:Authorization} .
+        RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+        # Redirect Trailing Slashes If Not A Folder...
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteCond %{REQUEST_URI} (.+)/$
+        RewriteRule ^ %1 [L,R=301]
+
+        # Send Requests To Front Controller...
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteRule ^ index.php [L]
+    </IfModule>
 </Directory>
 
 <IfModule dir_module>
@@ -59,7 +91,7 @@ DocumentRoot "/www"
 ErrorLog /dev/stderr
 TransferLog /dev/stdout
 
-LogLevel warn
+LogLevel info
 
 <IfModule log_config_module>
     LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined

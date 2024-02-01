@@ -30,7 +30,8 @@ class BuildAppImagesCommand extends Command
      * ? --push-ecr=tag
      */
     protected $signature = 'docker:build-app-images 
-                        {--no-delete}';
+                        {--release= : The release tag to use for the images}';
+
 
     public function __construct()
     {
@@ -45,9 +46,9 @@ class BuildAppImagesCommand extends Command
                 exit(1);
             }
         } catch (ProcessFailedException $exception) {
-            $this->warn('An error occurred: '.$exception->getMessage());
+            $this->warn('An error occurred: ' . $exception->getMessage());
         } catch (RandomException $e) {
-            $this->warn('An error occurred: '.$e->getMessage());
+            $this->warn('An error occurred: ' . $e->getMessage());
         }
 
         system('clear');
@@ -56,90 +57,123 @@ class BuildAppImagesCommand extends Command
 
     private function composeBuild(): void
     {
+        $uxmalTechReplacement = $this->arrayToDotNotation(config('uxmaltech'), 'uxmaltech.');
+        $uxmalEnvReplacement = $this->arrayToEnvNotation(config('uxmaltech'), 'UXMALTECH_');
 
-        $ECR_PHP_FPM_LATEST_BASE_IMAGE = config('aws-ecr.php-fpm.latest-base-image');
-        $ECR_PHP_FPM_LATEST_BASE_IMAGE_FROM = $ECR_PHP_FPM_LATEST_BASE_IMAGE;
-        if (strpos($ECR_PHP_FPM_LATEST_BASE_IMAGE, '/')) {
-            $ECR_PHP_FPM_LATEST_BASE_IMAGE_FROM = explode('/', $ECR_PHP_FPM_LATEST_BASE_IMAGE)[1];
+        $dockerizedImages = config('dockerized.images');
+
+        $this->line('Building the docker images for ' . config('uxmaltech.name') . ' ...');
+
+        $release = $this->option('release') ?? 'latest';
+        foreach (array_keys($dockerizedImages) as $imageToBuild) {
+            switch ($imageToBuild) {
+                case 'apache-php':
+                    $buildDir = $this->laravel->basePath('uxmaltech-build') . '/' . $release . '/apache-php';
+                    $this->initDir($buildDir);
+                    $this->copyLaravelApp($buildDir);
+                    $this->initLaravelApp($buildDir);
+
+                    $this->initDir($buildDir.'/conf');
+                    $cmd = "envsubst < ".__DIR__."/app-images/apache/httpd.conf.stub > $buildDir/conf/httpd.conf";
+                    $this->runCmd(['bash', '-c', $cmd], $uxmalEnvReplacement);
+
+                    $phpIniVars = [
+                        'PHP_MEMORY_LIMIT' => '128M',
+                        'PHP_EXPOSE_PHP' => 'On',
+                        'PHP_SESSION_GC_MAXLIFETIME' => '1440'
+                        ];
+
+                    $cmd = "envsubst < ".__DIR__."/app-images/apache/php.ini.stub > $buildDir/conf/php.ini";
+                    $this->runCmd(['bash', '-c', $cmd], $uxmalEnvReplacement + $phpIniVars);
+
+                    $this->initDir($buildDir.'/bash');
+
+                    $cmd = "cp ".__DIR__."/app-images/apache/bash/entrypoint.sh $buildDir/bash/entrypoint.sh";
+                    $this->runCmd(['bash', '-c', $cmd]);
+
+                    $cmd = "cp ".__DIR__."/app-images/apache/bash/envsubst.sh $buildDir/bash/envsubst.sh";
+                    $this->runCmd(['bash', '-c', $cmd]);
+
+
+                    $cmd = "cp ".__DIR__."/app-images/apache/default-env-stub $buildDir/default-env-stub";
+                    $this->runCmd(['bash', '-c', $cmd]);
+
+                    $dockerizedEnvReplacement = $this->arrayToEnvNotation(config('dockerized'), 'UXMALTECH_');
+                    $cmd = "envsubst < ".__DIR__."/app-images/apache/dockerfile.stub > $buildDir/Dockerfile";
+                    $this->runCmd(['bash', '-c', $cmd], $uxmalEnvReplacement + $dockerizedEnvReplacement);
+
+                    $this->buildImage($buildDir, $release, 'apache-php');
+
+                    break;
+                case 'nginx':
+
+                    break;
+                case 'php-fpm':
+
+                    break;
+                case 'php-cli-octane':
+
+                    break;
+                case 'php-cli':
+
+                    break;
+
+            }
         }
-        $ECR_PHP_FPM_EXPOSED_PORT = config('aws-ecr.php-fpm.exposed-port', '9000/tcp');
-        $ECR_PHP_FPM_PORT = explode('/', $ECR_PHP_FPM_EXPOSED_PORT)[0];
-        $ECR_PHP_FPM_PROTOCOL = explode('/', $ECR_PHP_FPM_EXPOSED_PORT)[1];
-        $ECR_PHP_FPM_SERVICE_DN = config('aws-ecr.php-fpm.app-image').'.'.config('uxmaltech.internal_domain');
+        exit(0);
 
-        $ECR_NGINX_LATEST_BASE_IMAGE = config('aws-ecr.nginx.latest-base-image');
-        $ECR_NGINX_LATEST_BASE_IMAGE_FROM = $ECR_NGINX_LATEST_BASE_IMAGE;
-        if (strpos($ECR_NGINX_LATEST_BASE_IMAGE, '/')) {
-            $ECR_NGINX_LATEST_BASE_IMAGE_FROM = explode('/', $ECR_NGINX_LATEST_BASE_IMAGE)[1];
-        }
-        $ECR_NGINX_EXPOSED_PORT = config('aws-ecr.nginx.exposed-port', '80/tcp');
-        $ECR_NGINX_PORT = explode('/', $ECR_NGINX_EXPOSED_PORT)[0];
-        $ECR_NGINX_PROTOCOL = explode('/', $ECR_NGINX_EXPOSED_PORT)[1];
-        $ECR_NGINX_SERVICE_DN = config('aws-ecr.nginx.app-image').'.'.config('uxmaltech.internal_domain');
-        $ECR_TIMEZONE = config('aws-ecr.timezone', 'America/Mexico_City');
+    }
 
-        $UXMALTECH_APP_NAME = config('uxmaltech.name', config('APP_NAME', 'laravel'));
-        $UXMALTECH_CURRENT_TAG = $this->ecrImageTag;
-        $UXMALTECH_AUTHOR_NAME = config('uxmaltech.author.name', config('APP_AUTHOR', 'UxmalTech'));
-        $UXMALTECH_AUTHOR_EMAIL = config('uxmaltech.author.email', config('APP_AUTHOR_EMAIL', 'name@email.com'));
+    function arrayToEnvNotation($array, $prefix = ''): array
+    {
+        $results = [];
 
-        $ECR_NGINX_APP_IMAGE_TAG = $UXMALTECH_APP_NAME.'-nginx:'.$UXMALTECH_CURRENT_TAG;
-        $ECR_PHP_FPM_APP_IMAGE_TAG = $UXMALTECH_APP_NAME.'-php-fpm:'.$UXMALTECH_CURRENT_TAG;
-
-        $envsubstVars = [
-            'DOLLAR' => '$',
-            'UXMALTECH_CURRENT_TAG' => $UXMALTECH_CURRENT_TAG,
-            'UXMALTECH_AUTHOR_NAME' => $UXMALTECH_AUTHOR_NAME,
-            'UXMALTECH_AUTHOR_EMAIL' => $UXMALTECH_AUTHOR_EMAIL,
-            'UXMALTECH_APP_NAME' => $UXMALTECH_APP_NAME,
-
-            'ECR_TIMEZONE' => $ECR_TIMEZONE,
-            'ECR_PHP_FPM_LATEST_BASE_IMAGE' => $ECR_PHP_FPM_LATEST_BASE_IMAGE,
-            'ECR_PHP_FPM_LATEST_BASE_IMAGE_FROM' => $ECR_PHP_FPM_LATEST_BASE_IMAGE_FROM,
-            'ECR_PHP_FPM_APP_IMAGE_TAG' => $ECR_PHP_FPM_APP_IMAGE_TAG,
-            'ECR_PHP_FPM_PORT' => $ECR_PHP_FPM_PORT,
-            'ECR_PHP_FPM_PROTOCOL' => $ECR_PHP_FPM_PROTOCOL,
-            'ECR_PHP_FPM_SERVICE_DN' => $ECR_PHP_FPM_SERVICE_DN,
-
-            'ECR_NGINX_LATEST_BASE_IMAGE' => $ECR_NGINX_LATEST_BASE_IMAGE,
-            'ECR_NGINX_LATEST_BASE_IMAGE_FROM' => $ECR_NGINX_LATEST_BASE_IMAGE_FROM,
-            'ECR_NGINX_APP_IMAGE_TAG' => $ECR_NGINX_APP_IMAGE_TAG,
-            'ECR_NGINX_PORT' => $ECR_NGINX_PORT,
-            'ECR_NGINX_PROTOCOL' => $ECR_NGINX_PROTOCOL,
-            'ECR_NGINX_SERVICE_DN' => $ECR_NGINX_SERVICE_DN,
-        ];
-
-        $headers = ['Variable', 'Contenido'];
-        // Mostrar la tabla
-        $envTable = [];
-        foreach ($envsubstVars as $variable => $contenido) {
-            $envTable[] = [$variable, $contenido];
-        }
-        $this->table($headers, $envTable);
-
-        if ($this->confirm('Do you wish to continue?') === false) {
-            exit(1);
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $results = array_merge($results, $this->arrayToEnvNotation($value, $prefix . $key . '_'));
+            } else {
+                $results[str_replace(['-'], ['_'], strtoupper($prefix . $key))] = $value;
+            }
         }
 
-        $this->line('(Dockerizing) Laravel Application'."\t\t".'[<comment>'.$UXMALTECH_APP_NAME.'</comment>]');
-        $this->line('Build directory                  '."\t\t".'[<comment>'.$this->laravel->basePath('docker-images/build').'</comment>]');
-        $dockerImageDir = $this->laravel->basePath('docker-images');
-        $buildDir = $dockerImageDir.'/build';
+        return $results;
+    }
 
+    function arrayToDotNotation($array, $prefix = ''): array
+    {
+        $results = [];
+
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $results = array_merge($results, $this->arrayToDotNotation($value, $prefix . $key . '.'));
+            } else {
+                $results["{" . $prefix . $key . "}"] = $value;
+            }
+        }
+
+        return $results;
+    }
+
+    function initDir($buildDir): void
+    {
         if (is_dir($buildDir)) {
             $this->runProcess("rm -rf $buildDir");
-            $this->line('Removing old build directory     '."\t\t".'[<comment>OK</comment>]');
+            $this->line('Removing old build directory ' . $buildDir . '        ' . "\t\t" . '[<comment>OK</comment>]');
         }
 
-        $appBuildDir = $buildDir.'/'.$UXMALTECH_APP_NAME;
-
-        if (! is_dir($appBuildDir) && mkdir($appBuildDir, 0777, true)) {
-            $this->line('Build directory created         '."\t\t".'[<comment>OK</comment>]');
-        } elseif (! is_dir($appBuildDir)) {
+        if (mkdir($buildDir, 0777, true)) {
+            $this->line('Build directory created ' . $buildDir . '        ' . "\t\t" . '[<comment>OK</comment>]');
+        } else {
             $this->error('Build directory could not be created.');
             exit(1);
         }
+    }
 
+    function copyLaravelApp($buildDir): void
+    {
+        $appBuildDir = $buildDir . '/laravelApp';
+        $this->initDir($appBuildDir);
+        $this->line('Copying Laravel Application to build directory ' . $appBuildDir . '        ' . "\t\t" . '[<comment>OK</comment>]');
         $this->output->write('Copying files to build directory...'."\t\t");
         if (! is_dir($this->laravel->basePath('.git'))) { // Si no existe el directorio .git, se copian los archivos con rsync
             $cmd = sprintf('rsync -av --exclude=%s %s %s', escapeshellarg('docker-images'), escapeshellarg($this->laravel->basePath().'/'), escapeshellarg($appBuildDir.'/'));
@@ -149,24 +183,33 @@ class BuildAppImagesCommand extends Command
             $cmd = "git archive $this->gitCommit | tar -x -C $appBuildDir";
         }
         $this->runCmd(['bash', '-c', $cmd]);
+
+        if ($this->devMode) {
+            // Copy the .env file to the build directory
+            $cmd = "cp " . $this->laravel->basePath('.env') . " $buildDir/laravelApp/.env";
+            $this->runCmd(['bash', '-c', $cmd]);
+        }
+
         $this->line('[<comment>OK</comment>]');
+    }
 
+    function initLaravelApp($buildDir): void
+    {
         $this->checkProtectedPackages();
-
         if (! empty($this->pathRepositoriesToCopy)) {
             foreach ($this->pathRepositoriesToCopy as $pathRepositoryToCopy) {
-                $this->line("Copying $pathRepositoryToCopy to {BuildDir}/$pathRepositoryToCopy\t\t".'[<comment>OK</comment>]');
-                $this->runCmd(['bash', '-c', "cp -r $pathRepositoryToCopy $appBuildDir/$pathRepositoryToCopy"]);
+                $this->line("Copying $pathRepositoryToCopy to $buildDir/laravelApp/$pathRepositoryToCopy\t\t".'[<comment>OK</comment>]');
+                $this->runCmd(['bash', '-c', "cp -r $pathRepositoryToCopy $buildDir/laravelApp/".$pathRepositoryToCopy]);
             }
         }
 
         $composer_command = 'install';
         if ($this->devMode) {
-            $cmd = "sed -i'' -e 's/\"symlink\": true/\"symlink\": false/g' $appBuildDir/composer.json";
+            $cmd = "sed -i'' -e 's/\"symlink\": true/\"symlink\": false/g' $buildDir/laravelApp/composer.json";
             $this->runCmd(['bash', '-c', $cmd]);
             $composer_command = 'update';
         } else {
-            if (str_contains('"symlink": true', file_get_contents($appBuildDir.'/composer.json'))) {
+            if (str_contains('"symlink": true', file_get_contents($buildDir.'/laravelApp/composer.json'))) {
                 $this->error('Symlink is not allowed in production mode. Please remove "symlink": true from composer.json file.');
                 exit(1);
             }
@@ -181,73 +224,28 @@ class BuildAppImagesCommand extends Command
             '--prefer-dist',
             '--no-cache',
             '--no-dev',
-        ], $appBuildDir);
+        ], $buildDir.'/laravelApp');
 
         $this->output->write("Running composer $composer_command in build directory...\t\t");
+
         try {
-            $this->runCmd(['bash', '-c', "cd $appBuildDir && npm run build"]);
+            $this->runCmd(['bash', '-c', "cd $buildDir/laravelApp && npm run build"]);
         } catch (ProcessFailedException $exception) {
             $this->error('An error occurred: '.$exception->getMessage());
             exit(1);
         }
 
         $this->line('[<comment>OK</comment>]');
-
-        $this->output->write("Build docker/{php-fpm,nginx} work directory...\t\t");
-        $dockerConfDir = $buildDir.'/docker/conf';
-        if (! is_dir($dockerConfDir) && ! mkdir($dockerConfDir, 0777, true)) {
-            $this->error('Build directory '.$dockerConfDir.' could not be created.');
-            exit(1);
-        }
-
-        $dockerNginxDir = $buildDir.'/docker/nginx';
-        if (! is_dir($dockerNginxDir) && ! mkdir($dockerNginxDir, 0777, true)) {
-            $this->error('Build directory '.$dockerNginxDir.' could not be created.');
-            exit(1);
-        }
-
-        $dockerPHPFPMDir = $buildDir.'/docker/php-fpm';
-        if (! is_dir($dockerPHPFPMDir) && ! mkdir($dockerPHPFPMDir, 0777, true)) {
-            $this->error('Build directory '.$dockerPHPFPMDir.' could not be created.');
-            exit(1);
-        }
-        $this->line('[<comment>OK</comment>]');
-
-        $cmd = "envsubst < $dockerImageDir/app-images/nginx/nginx.conf > $dockerConfDir/nginx.conf";
-        $this->runCmd(['bash', '-c', $cmd], $envsubstVars);
-
-        $cmd = "envsubst < $dockerImageDir/app-images/nginx/dockerfile-tmpl > $dockerNginxDir/Dockerfile";
-        $this->runCmd(['bash', '-c', $cmd], $envsubstVars);
-
-        $cmd = "envsubst < $dockerImageDir/app-images/php-fpm/dockerfile-tmpl > $dockerPHPFPMDir/Dockerfile";
-        $this->runCmd(['bash', '-c', $cmd], $envsubstVars);
-
-        //envsubst < "$THIS_DIR"/resources/docker/docker-compose-tmpl.yml > "$THIS_DIR"/docker-compose.yml
-
-        $cmd = "envsubst < $dockerImageDir/app-images/docker-compose-tmpl.yml > {$this->laravel->basePath('docker-compose.yml')}";
-        $this->runCmd(['bash', '-c', $cmd], $envsubstVars);
-
-        $cmd = "envsubst < $dockerImageDir/app-images/tmpl.env > $appBuildDir/.env";
-        $this->runCmd(['bash', '-c', $cmd], $envsubstVars);
-
-        //docker build -f docker-images/build/docker/php-fpm/Dockerfile .
-        $this->runDockerCmd(['build', '-f', $dockerPHPFPMDir.'/Dockerfile', '.', '-t', $ECR_PHP_FPM_APP_IMAGE_TAG]);
-
-        $this->runDockerCmd(['build', '-f', $dockerNginxDir.'/Dockerfile', '.', '-t', $ECR_NGINX_APP_IMAGE_TAG]);
-
-        /*
-        if (!$this->devMode) {
-            // En modo producción se tagea con latest para despues hacer el push de las imágenes a ECR.
-            // y que los servicios ejecuten las imágenes con el tag latest.
-            $this->runDockerCmd(['tag', $this->clusterContainerNginxAppRepositoryTag, $this->clusterContainerNginxAppRepositoryTagLatest]);
-            $this->runDockerCmd(['tag', $this->clusterContainerPhpFpmAppRepositoryTag, $this->clusterContainerPhpFpmAppRepositoryTagLatest]);
-        }
-        */
-
-        if (! $this->devMode) {
-            $this->info('Production Mode Removing build directory...');
-            $this->runProcess("rm -rf $buildDir");
-        }
-
     }
+
+    public function buildImage($buildDir, $tag, $imageType): void
+    {
+        $imageName = config('uxmaltech.prefix', 'uxtch').'-'.config('uxmaltech.name').$imageType;
+        $this->output->write("Building image...\t\t");
+        $this->runDockerCmd(['build', '-t', $imageName.':'.$tag, $buildDir]);
+        $this->runDockerCmd(['tag', $imageName.':'.$tag, $imageName.':latest']);
+        # $this->runDockerCmd(['tag', config('uxmaltech.name').':'.$tag, config('dockerized.registry').'/'.config('uxmaltech.name').':'.$tag]);
+        $this->line('[<comment>OK</comment>]');
+    }
+
 }

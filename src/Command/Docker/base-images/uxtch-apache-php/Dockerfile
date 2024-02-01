@@ -38,7 +38,10 @@ RUN apk add --no-cache \
         php82-dom \
         php82-pdo \
         php82-xsl \
-        php82-pdo_mysql
+        php82-pdo_mysql \
+        php82-tidy \
+        php82-tokenizer \
+        php82-bcmath
 
 # Default volumes to organise all the files under one roof (all of them are bind mounted into the container)
 

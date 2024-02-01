@@ -207,6 +207,6 @@ class BuildBaseImagesCommand extends Command
 
         $this->info("Docker image built $image:$versionString successfully.");
 
-        $this->replaceConfigKey('dockerized.images.php-cli.base-image', $image.':'.$versionString, true, config_path('dockerized.php'));
+        $this->replaceConfigKey('images.php-cli.base-image', $image.':'.$versionString, true, config_path('dockerized.php'));
     }
 }

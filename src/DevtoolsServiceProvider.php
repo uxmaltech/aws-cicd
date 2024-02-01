@@ -18,6 +18,7 @@ use Uxmal\Devtools\Command\Uxmaltech\AddBackOfficeUICommand;
 use Uxmal\Devtools\Command\Uxmaltech\BuildAwsEcrConfigCommand;
 use Uxmal\Devtools\Command\Uxmaltech\BuildAwsEcsConfigCommand;
 use Uxmal\Devtools\Command\Uxmaltech\BuildAwsVpcConfigCommand;
+use Uxmal\Devtools\Command\Uxmaltech\BuildDockerizedConfigCommand;
 use Uxmal\Devtools\Command\Uxmaltech\BuildUxmalTechConfigCommand;
 
 class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvider
@@ -51,6 +52,7 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
                 BuildAwsEcrConfigCommand::class,
                 BuildAwsVpcConfigCommand::class,
                 BuildAwsEcsConfigCommand::class,
+                BuildDockerizedConfigCommand::class,
                 TestCommand::class,
                 // AWS
                 ECRPushToRepositoryCommand::class,
@@ -96,6 +98,7 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
             BuildAwsEcrConfigCommand::class,
             BuildAwsVpcConfigCommand::class,
             BuildAwsEcsConfigCommand::class,
+            BuildDockerizedConfigCommand::class,
             TestCommand::class,
             // AWS
             ECRPushToRepositoryCommand::class,
