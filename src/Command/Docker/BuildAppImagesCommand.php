@@ -32,7 +32,6 @@ class BuildAppImagesCommand extends Command
     protected $signature = 'docker:build-app-images 
                         {--release= : The release tag to use for the images}';
 
-
     public function __construct()
     {
         parent::__construct();
@@ -46,9 +45,9 @@ class BuildAppImagesCommand extends Command
                 exit(1);
             }
         } catch (ProcessFailedException $exception) {
-            $this->warn('An error occurred: ' . $exception->getMessage());
+            $this->warn('An error occurred: '.$exception->getMessage());
         } catch (RandomException $e) {
-            $this->warn('An error occurred: ' . $e->getMessage());
+            $this->warn('An error occurred: '.$e->getMessage());
         }
 
         system('clear');
@@ -62,44 +61,43 @@ class BuildAppImagesCommand extends Command
 
         $dockerizedImages = config('dockerized.images');
 
-        $this->line('Building the docker images for ' . config('uxmaltech.name') . ' ...');
+        $this->line('Building the docker images for '.config('uxmaltech.name').' ...');
 
         $release = $this->option('release') ?? 'latest';
         foreach (array_keys($dockerizedImages) as $imageToBuild) {
             switch ($imageToBuild) {
                 case 'apache-php':
-                    $buildDir = $this->laravel->basePath('uxmaltech-build') . '/' . $release . '/apache-php';
+                    $buildDir = $this->laravel->basePath('uxmaltech-build').'/'.$release.'/apache-php';
                     $this->initDir($buildDir);
                     $this->copyLaravelApp($buildDir);
                     $this->initLaravelApp($buildDir);
 
                     $this->initDir($buildDir.'/conf');
-                    $cmd = "envsubst < ".__DIR__."/app-images/apache/httpd.conf.stub > $buildDir/conf/httpd.conf";
+                    $cmd = 'envsubst < '.__DIR__."/app-images/apache/httpd.conf.stub > $buildDir/conf/httpd.conf";
                     $this->runCmd(['bash', '-c', $cmd], $uxmalEnvReplacement);
 
                     $phpIniVars = [
                         'PHP_MEMORY_LIMIT' => '128M',
                         'PHP_EXPOSE_PHP' => 'On',
-                        'PHP_SESSION_GC_MAXLIFETIME' => '1440'
-                        ];
+                        'PHP_SESSION_GC_MAXLIFETIME' => '1440',
+                    ];
 
-                    $cmd = "envsubst < ".__DIR__."/app-images/apache/php.ini.stub > $buildDir/conf/php.ini";
+                    $cmd = 'envsubst < '.__DIR__."/app-images/apache/php.ini.stub > $buildDir/conf/php.ini";
                     $this->runCmd(['bash', '-c', $cmd], $uxmalEnvReplacement + $phpIniVars);
 
                     $this->initDir($buildDir.'/bash');
 
-                    $cmd = "cp ".__DIR__."/app-images/apache/bash/entrypoint.sh $buildDir/bash/entrypoint.sh";
+                    $cmd = 'cp '.__DIR__."/app-images/apache/bash/entrypoint.sh $buildDir/bash/entrypoint.sh";
                     $this->runCmd(['bash', '-c', $cmd]);
 
-                    $cmd = "cp ".__DIR__."/app-images/apache/bash/envsubst.sh $buildDir/bash/envsubst.sh";
+                    $cmd = 'cp '.__DIR__."/app-images/apache/bash/envsubst.sh $buildDir/bash/envsubst.sh";
                     $this->runCmd(['bash', '-c', $cmd]);
 
-
-                    $cmd = "cp ".__DIR__."/app-images/apache/default-env-stub $buildDir/default-env-stub";
+                    $cmd = 'cp '.__DIR__."/app-images/apache/default-env-stub $buildDir/default-env-stub";
                     $this->runCmd(['bash', '-c', $cmd]);
 
                     $dockerizedEnvReplacement = $this->arrayToEnvNotation(config('dockerized'), 'UXMALTECH_');
-                    $cmd = "envsubst < ".__DIR__."/app-images/apache/dockerfile.stub > $buildDir/Dockerfile";
+                    $cmd = 'envsubst < '.__DIR__."/app-images/apache/dockerfile.stub > $buildDir/Dockerfile";
                     $this->runCmd(['bash', '-c', $cmd], $uxmalEnvReplacement + $dockerizedEnvReplacement);
 
                     $this->buildImage($buildDir, $release, 'apache-php');
@@ -124,56 +122,56 @@ class BuildAppImagesCommand extends Command
 
     }
 
-    function arrayToEnvNotation($array, $prefix = ''): array
+    public function arrayToEnvNotation($array, $prefix = ''): array
     {
         $results = [];
 
         foreach ($array as $key => $value) {
             if (is_array($value)) {
-                $results = array_merge($results, $this->arrayToEnvNotation($value, $prefix . $key . '_'));
+                $results = array_merge($results, $this->arrayToEnvNotation($value, $prefix.$key.'_'));
             } else {
-                $results[str_replace(['-'], ['_'], strtoupper($prefix . $key))] = $value;
+                $results[str_replace(['-'], ['_'], strtoupper($prefix.$key))] = $value;
             }
         }
 
         return $results;
     }
 
-    function arrayToDotNotation($array, $prefix = ''): array
+    public function arrayToDotNotation($array, $prefix = ''): array
     {
         $results = [];
 
         foreach ($array as $key => $value) {
             if (is_array($value)) {
-                $results = array_merge($results, $this->arrayToDotNotation($value, $prefix . $key . '.'));
+                $results = array_merge($results, $this->arrayToDotNotation($value, $prefix.$key.'.'));
             } else {
-                $results["{" . $prefix . $key . "}"] = $value;
+                $results['{'.$prefix.$key.'}'] = $value;
             }
         }
 
         return $results;
     }
 
-    function initDir($buildDir): void
+    public function initDir($buildDir): void
     {
         if (is_dir($buildDir)) {
             $this->runProcess("rm -rf $buildDir");
-            $this->line('Removing old build directory ' . $buildDir . '        ' . "\t\t" . '[<comment>OK</comment>]');
+            $this->line('Removing old build directory '.$buildDir.'        '."\t\t".'[<comment>OK</comment>]');
         }
 
         if (mkdir($buildDir, 0777, true)) {
-            $this->line('Build directory created ' . $buildDir . '        ' . "\t\t" . '[<comment>OK</comment>]');
+            $this->line('Build directory created '.$buildDir.'        '."\t\t".'[<comment>OK</comment>]');
         } else {
             $this->error('Build directory could not be created.');
             exit(1);
         }
     }
 
-    function copyLaravelApp($buildDir): void
+    public function copyLaravelApp($buildDir): void
     {
-        $appBuildDir = $buildDir . '/laravelApp';
+        $appBuildDir = $buildDir.'/laravelApp';
         $this->initDir($appBuildDir);
-        $this->line('Copying Laravel Application to build directory ' . $appBuildDir . '        ' . "\t\t" . '[<comment>OK</comment>]');
+        $this->line('Copying Laravel Application to build directory '.$appBuildDir.'        '."\t\t".'[<comment>OK</comment>]');
         $this->output->write('Copying files to build directory...'."\t\t");
         if (! is_dir($this->laravel->basePath('.git'))) { // Si no existe el directorio .git, se copian los archivos con rsync
             $cmd = sprintf('rsync -av --exclude=%s %s %s', escapeshellarg('docker-images'), escapeshellarg($this->laravel->basePath().'/'), escapeshellarg($appBuildDir.'/'));
@@ -186,14 +184,14 @@ class BuildAppImagesCommand extends Command
 
         if ($this->devMode) {
             // Copy the .env file to the build directory
-            $cmd = "cp " . $this->laravel->basePath('.env') . " $buildDir/laravelApp/.env";
+            $cmd = 'cp '.$this->laravel->basePath('.env')." $buildDir/laravelApp/.env";
             $this->runCmd(['bash', '-c', $cmd]);
         }
 
         $this->line('[<comment>OK</comment>]');
     }
 
-    function initLaravelApp($buildDir): void
+    public function initLaravelApp($buildDir): void
     {
         $this->checkProtectedPackages();
         if (! empty($this->pathRepositoriesToCopy)) {
@@ -244,8 +242,7 @@ class BuildAppImagesCommand extends Command
         $this->output->write("Building image...\t\t");
         $this->runDockerCmd(['build', '-t', $imageName.':'.$tag, $buildDir]);
         $this->runDockerCmd(['tag', $imageName.':'.$tag, $imageName.':latest']);
-        # $this->runDockerCmd(['tag', config('uxmaltech.name').':'.$tag, config('dockerized.registry').'/'.config('uxmaltech.name').':'.$tag]);
+        // $this->runDockerCmd(['tag', config('uxmaltech.name').':'.$tag, config('dockerized.registry').'/'.config('uxmaltech.name').':'.$tag]);
         $this->line('[<comment>OK</comment>]');
     }
-
 }
