@@ -1,0 +1,19 @@
+  NGINX_SERVICE_DN:
+    image: NGINX_IMAGE_TAG
+    environment:
+          - UXMALTECH_API_ENDPOINT_DEVELOPMENT="API_END_POINT_DN"
+    ports:
+      - "NGINX_PORTS"
+    depends_on:
+      - PHP_FPM_SERVICE_DN
+    networks:
+      - uxmal-tech-network
+
+  PHP_FPM_SERVICE_DN:
+    image: PHP_FPM_IMAGE_TAG
+    environment:
+              - UXMALTECH_API_ENDPOINT_DEVELOPMENT="API_END_POINT_DN"
+    ports:
+      - "PHP_FPM_PORTS"
+    networks:
+      - uxmal-tech-network

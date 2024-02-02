@@ -444,15 +444,14 @@ trait GeneralUtils
             $repositories = $composerJson->getRepositories();
             foreach ($repositories as $repository) {
                 if ($repository->getType() === 'path') {
-                    if( ! in_array($repository->getUrl(), $this->pathRepositoriesToCopy) ) {
+                    if (! in_array($repository->getUrl(), $this->pathRepositoriesToCopy)) {
                         $this->pathRepositoriesToCopy[] = $repository->getUrl();
                     }
                 }
             }
 
-
             $packageJsonPath = base_path('package.json');
-            if( file_exists($packageJsonPath) ) {
+            if (file_exists($packageJsonPath)) {
                 $packageJsonContent = file_get_contents($packageJsonPath);
 
                 $pattern = '/"file:(.*?)"/';
@@ -461,14 +460,12 @@ trait GeneralUtils
                 $packages = $matches[1]; // Contiene los nombres de los paquetes
 
                 foreach ($packages as $package) {
-                    if( ! in_array($package, $this->pathRepositoriesToCopy) ){
+                    if (! in_array($package, $this->pathRepositoriesToCopy)) {
                         // $this->pathRepositoriesToCopy[] = $package;
                     }
                 }
             }
             dump($this->pathRepositoriesToCopy);
-
-
 
         } catch (InvalidArgumentException $e) {
             // The given file could not be found or is not readable

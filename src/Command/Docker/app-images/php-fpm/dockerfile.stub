@@ -1,0 +1,38 @@
+FROM ${DOCKERIZED_PHP_FPM_BASE_IMAGE}
+
+COPY laravelApp /www
+
+RUN mkdir -p /www/storage/framework/sessions
+RUN mkdir -p /www/storage/framework/views
+RUN mkdir -p /www/storage/framework/cache
+
+RUN chmod -R 777 /www/storage
+RUN chmod -R 777 /www/bootstrap/cache
+
+ENV PHP_FPM_ERROR_LOG=/proc/self/fd/2
+ENV PHP_FPM_LOG_LEVEL=error
+ENV PHP_FPM_LISTEN=0.0.0.0:${DOCKERIZED_PHP_FPM_EXPOSED_PORT}
+ENV PHP_FPM_USER=www-data
+ENV PHP_FPM_GROUP=www-data
+ENV PHP_FPM_LISTEN_OWNER=www-data
+ENV PHP_FPM_LISTEN_GROUP=www-data
+ENV PHP_MEMORY_LIMIT=512M
+ENV PHP_EXPOSE_PHP=On
+ENV PHP_SESSION_GC_MAXLIFETIME=1440
+
+# Copy PHP-FPM configuration files
+COPY conf/php-fpm.conf.stub /php-fpm.conf.stub
+COPY conf/www.conf.stub /www.conf.stub
+COPY conf/default-php.ini.stub /default-php.ini.stub
+
+
+# Copy util scripts
+COPY bash/envsubst.sh /envsubst.sh
+COPY bash/entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+RUN chmod +x /envsubst.sh
+
+EXPOSE ${DOCKERIZED_PHP_FPM_EXPOSED_PORT}
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["php-fpm", "-F", "-O"]

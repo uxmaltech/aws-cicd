@@ -1,0 +1,25 @@
+FROM ${DOCKERIZED_PHP_CLI_BASE_IMAGE}
+
+COPY laravelApp /www
+
+RUN mkdir -p /www/storage/framework/sessions
+RUN mkdir -p /www/storage/framework/views
+RUN mkdir -p /www/storage/framework/cache
+
+RUN chmod -R 777 /www/storage
+RUN chmod -R 777 /www/bootstrap/cache
+
+# Copy PHP-FPM configuration files
+COPY conf/default-php.ini.stub /default-php.ini.stub
+
+
+# Copy util scripts
+COPY bash/envsubst.sh /envsubst.sh
+COPY bash/entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+RUN chmod +x /envsubst.sh
+
+$DOCKERIZED_PHP_CLI_EXPOSED_PORT
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["php", "/www/artisan", $DOCKERIZED_PHP_CLI_ARTISAN_COMMAND]

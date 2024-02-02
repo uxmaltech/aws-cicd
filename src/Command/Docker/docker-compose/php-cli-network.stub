@@ -1,0 +1,8 @@
+  PHP_CLI_SERVICE_DN:
+    image: PHP_CLI_IMAGE_TAG
+    ports:
+      - "PHP_CLI_PORTS"
+    environment:
+      - DOCKERIZED_PHP_CLI_ARTISAN_COMMAND="XXX_PHP_CLI_ARTISAN_COMMAND"
+    networks:
+      - uxmal-tech-network
