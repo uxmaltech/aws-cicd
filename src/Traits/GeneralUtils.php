@@ -440,12 +440,35 @@ trait GeneralUtils
 
             }
 
+            /** Get Repositories to copy from Package JSON  (Dev Mode) */
             $repositories = $composerJson->getRepositories();
             foreach ($repositories as $repository) {
                 if ($repository->getType() === 'path') {
-                    $this->pathRepositoriesToCopy[] = $repository->getUrl();
+                    if( ! in_array($repository->getUrl(), $this->pathRepositoriesToCopy) ) {
+                        $this->pathRepositoriesToCopy[] = $repository->getUrl();
+                    }
                 }
             }
+
+
+            $packageJsonPath = base_path('package.json');
+            if( file_exists($packageJsonPath) ) {
+                $packageJsonContent = file_get_contents($packageJsonPath);
+
+                $pattern = '/"file:(.*?)"/';
+                preg_match_all($pattern, $packageJsonContent, $matches);
+
+                $packages = $matches[1]; // Contiene los nombres de los paquetes
+
+                foreach ($packages as $package) {
+                    if( ! in_array($package, $this->pathRepositoriesToCopy) ){
+                        // $this->pathRepositoriesToCopy[] = $package;
+                    }
+                }
+            }
+            dump($this->pathRepositoriesToCopy);
+
+
 
         } catch (InvalidArgumentException $e) {
             // The given file could not be found or is not readable
@@ -504,7 +527,7 @@ trait GeneralUtils
         // Execute the process
 
         $process->setTimeout(3600);
-        $process->setIdleTimeout(60);
+        $process->setIdleTimeout(3600);
 
         if (! empty($cwd)) {
             $process->setWorkingDirectory($cwd);
@@ -535,7 +558,7 @@ trait GeneralUtils
 
         $process = new Process(array_merge(['docker'], $args));
 
-        $process->setTimeout(36000);
+        $process->setTimeout(3600);
         $process->setIdleTimeout(3600);
         if (! empty($input)) {
             $process->setInput($input);

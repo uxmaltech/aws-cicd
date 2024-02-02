@@ -1,4 +1,4 @@
-FROM ${UXMALTECH_IMAGES_APACHE_PHP_BASE_IMAGE}
+FROM ${DOCKERIZED_APACHE_PHP_BASE_IMAGE}
 
 COPY laravelApp /www
 COPY conf/httpd.conf /etc/apache2/httpd.conf
@@ -16,6 +16,8 @@ RUN mkdir -p /www/storage/framework/cache
 
 RUN chmod -R 777 /www/storage
 RUN chmod -R 777 /www/bootstrap/cache
+
+ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["httpd", "-D", "FOREGROUND"]
 

@@ -92,7 +92,7 @@ class BuildBaseImagesCommand extends Command
 
         $this->table($headers, $envTable);
 
-        if (! $this->confirm('¿Es correcto, proceder a la creación de la VPC?')) {
+        if (! $this->confirm('¿Proceder a la creación de las imágenes Bases?')) {
             $this->error('Abortando...');
             exit(1);
         }
@@ -108,7 +108,7 @@ class BuildBaseImagesCommand extends Command
                 case 'php-fpm':
                     $this->buildPhpFpmImage($php_fpm_image, $versionString);
                     break;
-                case 'php-cli-octane':
+                case 'php-octane':
                     $this->buildPhpCliOctaneImage($php_cli_octane_image, $versionString);
                     break;
                 case 'php-cli':
@@ -176,7 +176,7 @@ class BuildBaseImagesCommand extends Command
 
     private function buildPhpCliOctaneImage($image, $versionString): void
     {
-        $workDir = __DIR__.'/base-images/uxtch-php-cli-octane/';
+        $workDir = __DIR__.'/base-images/uxtch-php-octane/';
         if (! is_dir($workDir)) {
             $this->error('The directory docker-images/base-images/uxtch-php-cli-octane does not exists.');
             exit(1);
