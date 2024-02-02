@@ -1,5 +1,6 @@
 'php-cli' => [
-    'base-image' => '@docker.php-cli.base-image@',
-    'app-image' => '@docker.php-cli.image@',
-    'exposed-port' => null,
+    'base-image' => 'php-cli-base:tag',
+    'app-image' => 'php-cli-app:tag',
+    'command' => '"php", "/www/artisan", "serve", "--host=0.0.0.0"',
+    'exposed-port' => '8000/tcp',
     ],

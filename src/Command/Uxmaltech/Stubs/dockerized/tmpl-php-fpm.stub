@@ -1,5 +1,5 @@
 'php-fpm' => [
-    'base-image' => '@docker.php-cli.base-image@',
-    'app-image' => '@docker.php-cli.image@',
-    'exposed-port' => null,
+    'base-image' => 'php-fpm-base:tag',
+    'app-image' => 'php-fpm-app:tag',
+    'exposed-port' => '9000/tcp',
     ],

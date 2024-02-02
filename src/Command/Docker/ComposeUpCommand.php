@@ -131,13 +131,14 @@ class ComposeUpCommand extends Command
                 case 'php-cli':
                     $vars = [];
                     $file_to_load = __DIR__.'/docker-compose/php-cli.stub';
+                    $vars['PHP_CLI_SERVICE_DN'] = $config['hostname'] ?? 'php-cli';
+
                     if (isset($config['hostname']) && isset($config['ports'])) {
-                        $vars['PHP_CLI_SERVICE_DN'] = $config['hostname'];
                         $vars['PHP_CLI_PORTS'] = $config['ports'];
                         $file_to_load = __DIR__.'/docker-compose/php-cli-network.stub';
                     }
                     $vars['PHP_CLI_IMAGE_TAG'] = $config['image'];
-                    $vars['XXX_PHP_CLI_ARTISAN_COMMAND'] = $config['artisan-command'];
+                    $vars['PHP_CLI_COMMAND'] = $config['command'];
                     if (is_file(__DIR__.'/docker-compose/php-cli.stub')) {
                         $compose_data_services[] = str_replace(array_keys($vars), array_values($vars), file_get_contents($file_to_load));
                     }
