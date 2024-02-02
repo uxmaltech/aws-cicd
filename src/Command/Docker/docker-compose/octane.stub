@@ -1,0 +1,6 @@
+  OCTANE_SERVICE_DN:
+    image: OCTANE_IMAGE_TAG
+    ports:
+      - "OCTANE_PORTS"
+    networks:
+      - uxmal-tech-network

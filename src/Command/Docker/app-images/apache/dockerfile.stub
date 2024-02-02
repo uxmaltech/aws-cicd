@@ -1,0 +1,24 @@
+FROM ${DOCKERIZED_APACHE_PHP_BASE_IMAGE}
+
+COPY laravelApp /www
+COPY conf/httpd.conf /etc/apache2/httpd.conf
+COPY conf/php.ini /etc/php82/php.ini
+COPY bash/entrypoint.sh /entrypoint.sh
+COPY bash/envsubst.sh /envsubst.sh
+COPY default-env-stub /default-env-stub
+
+RUN chmod +x /entrypoint.sh
+RUN chmod +x /envsubst.sh
+
+RUN mkdir -p /www/storage/framework/sessions
+RUN mkdir -p /www/storage/framework/views
+RUN mkdir -p /www/storage/framework/cache
+
+RUN chmod -R 777 /www/storage
+RUN chmod -R 777 /www/bootstrap/cache
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["httpd", "-D", "FOREGROUND"]
+
+EXPOSE 80

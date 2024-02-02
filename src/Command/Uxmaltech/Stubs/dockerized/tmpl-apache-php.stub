@@ -1,0 +1,5 @@
+'apache-php' => [
+    'base-image' => '@docker.apache-php.base-image@',
+    'app-image' => '@docker.apache-php.image@',
+    'exposed-port' => '80/tcp',
+    ],

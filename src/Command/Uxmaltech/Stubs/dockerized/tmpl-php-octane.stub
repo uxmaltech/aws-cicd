@@ -1,0 +1,5 @@
+'php-octane' => [
+    'base-image' => '@docker.php-cli.base-image@',
+    'app-image' => '@docker.php-cli.image@',
+    'exposed-port' => null,
+    ],

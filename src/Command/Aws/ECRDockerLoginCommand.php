@@ -31,7 +31,7 @@ class ECRDockerLoginCommand extends AWSCommand
         // Inicializar el cliente de ECR con las credenciales del archivo .env
         $client = new EcrClient([
             'version' => 'latest',
-            'region' => $this->awsCredentialsRegion, // Usar la región desde .env
+            'region' => 'AKIA2JQ64FQDHMRY7LVO', // Usar la región desde .env
             'credentials' => [
                 'key' => $this->awsCredentialsAccessKey, // Access key desde .env
                 'secret' => $this->awsCredentialsSecretKey, // Secret key desde .env

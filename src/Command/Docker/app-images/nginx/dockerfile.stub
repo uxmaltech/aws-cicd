@@ -1,0 +1,11 @@
+# Use Alpine Linux
+FROM ${DOCKERIZED_NGINX_BASE_IMAGE}
+
+# Install dependencies
+COPY conf/nginx.conf /etc/nginx/nginx.conf
+RUN mkdir -p /www/public
+COPY laravelApp/public /www/public/
+
+EXPOSE ${DOCKERIZED_NGINX_EXPOSED_PORT}
+
+CMD ["/usr/sbin/nginx", "-g", "daemon off;"]

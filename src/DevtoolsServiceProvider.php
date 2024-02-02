@@ -4,18 +4,22 @@ namespace Uxmal\Devtools;
 
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
-use Uxmal\Devtools\Command\Aws\CreateInfrastructureCommand;
+use Uxmal\Devtools\Command\Aws\DeployInfrastructureCommand;
 use Uxmal\Devtools\Command\Aws\ECRDockerLoginCommand;
 use Uxmal\Devtools\Command\Aws\ECRListRepositoriesCommand;
 use Uxmal\Devtools\Command\Aws\ECRPushToRepositoryCommand;
-use Uxmal\Devtools\Command\AWS\Route53CreateDomainsCommand;
 use Uxmal\Devtools\Command\BuildInfrastructureConfigCommand;
+use Uxmal\Devtools\Command\Docker\BuildAppImagesCommand;
 use Uxmal\Devtools\Command\Docker\BuildBaseImagesCommand;
-use Uxmal\Devtools\Command\Docker\ComposeBuildCommand;
 use Uxmal\Devtools\Command\Docker\ComposeUpCommand;
 use Uxmal\Devtools\Command\InstallCommand;
 use Uxmal\Devtools\Command\TestCommand;
 use Uxmal\Devtools\Command\Uxmaltech\AddBackOfficeUICommand;
+use Uxmal\Devtools\Command\Uxmaltech\BuildAwsEcrConfigCommand;
+use Uxmal\Devtools\Command\Uxmaltech\BuildAwsEcsConfigCommand;
+use Uxmal\Devtools\Command\Uxmaltech\BuildAwsVpcConfigCommand;
+use Uxmal\Devtools\Command\Uxmaltech\BuildDockerizedConfigCommand;
+use Uxmal\Devtools\Command\Uxmaltech\BuildUxmalTechConfigCommand;
 
 class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvider
 {
@@ -37,19 +41,24 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
             $this->commands([
                 // Docker
                 BuildBaseImagesCommand::class,
-                ComposeBuildCommand::class,
+                BuildAppImagesCommand::class,
                 InstallCommand::class,
+                BuildUxmalTechConfigCommand::class,
                 ComposeUpCommand::class,
-                // Uxmaltech
+                // Devtools
                 AddBackOfficeUICommand::class,
                 BuildInfrastructureConfigCommand::class,
+                BuildUxmalTechConfigCommand::class,
+                BuildAwsEcrConfigCommand::class,
+                BuildAwsVpcConfigCommand::class,
+                BuildAwsEcsConfigCommand::class,
+                BuildDockerizedConfigCommand::class,
                 TestCommand::class,
                 // AWS
                 ECRPushToRepositoryCommand::class,
                 ECRListRepositoriesCommand::class,
                 ECRDockerLoginCommand::class,
-                Route53CreateDomainsCommand::class,
-                CreateInfrastructureCommand::class,
+                DeployInfrastructureCommand::class,
             ]);
         }
     }
@@ -78,18 +87,24 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
         return [
             // Docker
             BuildBaseImagesCommand::class,
-            ComposeBuildCommand::class,
+            BuildAppImagesCommand::class,
             InstallCommand::class,
+            BuildUxmalTechConfigCommand::class,
             ComposeUpCommand::class,
-            // Uxmaltech
+            // Devtools
             AddBackOfficeUICommand::class,
             BuildInfrastructureConfigCommand::class,
+            BuildUxmalTechConfigCommand::class,
+            BuildAwsEcrConfigCommand::class,
+            BuildAwsVpcConfigCommand::class,
+            BuildAwsEcsConfigCommand::class,
+            BuildDockerizedConfigCommand::class,
             TestCommand::class,
             // AWS
             ECRPushToRepositoryCommand::class,
             ECRListRepositoriesCommand::class,
             ECRDockerLoginCommand::class,
-            CreateInfrastructureCommand::class,
+            DeployInfrastructureCommand::class,
         ];
     }
 }

@@ -1,0 +1,54 @@
+events {
+  worker_connections 768;
+}
+
+http {
+  # Nginx will handle gzip compression of responses from the app server
+  gzip on;
+  gzip_proxied any;
+  gzip_types text/plain application/json;
+  gzip_min_length 1000;
+
+  access_log /dev/stdout;
+  include /etc/nginx/mime.types;
+
+  server{
+    listen 8080;
+    location /stub_status {
+        stub_status   on;
+    }
+  }
+
+  server {
+      listen $DOCKERIZED_NGINX_EXPOSED_PORT;
+      listen [::]:$DOCKERIZED_NGINX_EXPOSED_PORT;
+      server_name $DOCKERIZED_NGINX_NGINX_HOST;
+      root /www/public;
+
+      add_header X-Frame-Options "SAMEORIGIN";
+      add_header X-Content-Type-Options "nosniff";
+
+      index index.php;
+
+      charset utf-8;
+
+      location / {
+          try_files ${DOLLAR}uri ${DOLLAR}uri/ /index.php?${DOLLAR}query_string;
+      }
+
+      location = /favicon.ico { access_log off; log_not_found off; }
+      location = /robots.txt  { access_log off; log_not_found off; }
+
+      error_page 404 /index.php;
+
+      location ~ \.php${DOLLAR} {
+          fastcgi_pass $DOCKERIZED_NGINX_FASTCGI_HOST:$DOCKERIZED_NGINX_FASTCGI_PORT;
+          fastcgi_param SCRIPT_FILENAME ${DOLLAR}realpath_root${DOLLAR}fastcgi_script_name;
+          include fastcgi_params;
+      }
+
+      location ~ /\.(?!well-known).* {
+          deny all;
+      }
+  }
+}
