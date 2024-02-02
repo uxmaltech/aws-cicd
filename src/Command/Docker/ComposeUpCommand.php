@@ -138,7 +138,6 @@ class ComposeUpCommand extends Command
                         $file_to_load = __DIR__.'/docker-compose/php-cli-network.stub';
                     }
                     $vars['PHP_CLI_IMAGE_TAG'] = $config['image'];
-                    $vars['PHP_CLI_COMMAND'] = $config['command'];
                     if (is_file(__DIR__.'/docker-compose/php-cli.stub')) {
                         $compose_data_services[] = str_replace(array_keys($vars), array_values($vars), file_get_contents($file_to_load));
                     }
