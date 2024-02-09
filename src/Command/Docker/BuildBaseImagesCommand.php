@@ -114,10 +114,9 @@ class BuildBaseImagesCommand extends Command
                 case 'php-cli':
                     $this->buildPhpCliImage($php_cli_image, $versionString);
                     break;
-
             }
         }
-        exit(0);
+         exit(0);
     }
 
     private function buildApachePhpImage($image, $versionString): void

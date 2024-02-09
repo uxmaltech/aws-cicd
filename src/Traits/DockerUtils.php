@@ -10,6 +10,7 @@ trait DockerUtils
 
     protected string $phpVersion = '8.2.15';
 
+    protected string $kafkaVersion = '7.5.3';
     protected string $nginxVersion = '1.24';
 
     protected string $apacheVersion = '2.4.52';

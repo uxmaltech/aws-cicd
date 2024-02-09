@@ -1,0 +1,9 @@
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - 22181:2181
+    networks:
+      - uxmal-tech-network
+    environment:
+      - ZOOKEEPER_CLIENT_PORT= 2181
+      - ZOOKEEPER_TICK_TIME= 2000
