@@ -116,7 +116,7 @@ class BuildBaseImagesCommand extends Command
                     break;
             }
         }
-         exit(0);
+        exit(0);
     }
 
     private function buildApachePhpImage($image, $versionString): void
