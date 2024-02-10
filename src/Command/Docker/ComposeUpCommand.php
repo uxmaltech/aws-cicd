@@ -45,49 +45,57 @@ class ComposeUpCommand extends Command
 
         $profile = $this->option('profile');
         if ($profile) {
-            $this->info('Using profile: '.$profile);
+            $this->info('Using profile: ' . $profile);
+
+            if( file_exists(__DIR__ . '/docker-compose/profiles/' . $profile . '.stub')) {
+                $composeFileData = file_get_contents(__DIR__ . '/docker-compose/profiles/' . $profile . '.stub');
+            } else {
+                $this->error('Profile not found: ' . $profile);
+                exit(1);
+            }
+            $this->saveAndRun($composeFileData);
         } else {
-            $this->info('Using default profile');
+            $this->info('Using dockerized.compose, content');
         }
 
         $compose = config('dockerized.compose');
 
         $compose_data_services = [];
         foreach ($compose as $service => $config) {
-            if (! $profile) {
+            if (!$profile) {
                 $profile = $service;
             }
             switch ($config['type']) {
                 case 'nginx-php-fpm':
-                    $this->info('Configuring Services: '.$service);
+                    $this->info('Configuring Services: ' . $service);
                     $nginx = null;
                     $phpFpm = null;
                     foreach ($config['services'] as $element => $data) {
                         switch ($element) {
                             case 'nginx':
-                                $this->info('Starting service: '.$element);
+                                $this->info('Starting service: ' . $element);
                                 $nginx = $data;
                                 break;
                             case 'php-fpm':
-                                $this->info('Starting service: '.$element);
+                                $this->info('Starting service: ' . $element);
                                 $phpFpm = $data;
                                 break;
                             default:
-                                $this->error('Service not found: '.$element);
+                                $this->error('Service not found: ' . $element);
                                 exit(1);
                         }
                     }
 
-                    if (! $nginx || ! $phpFpm) {
+                    if (!$nginx || !$phpFpm) {
                         $this->error('Must be two services nginx and php-fpm');
                         exit(1);
                     }
 
-                    if (! array_key_exists('image', $nginx)) {
+                    if (!array_key_exists('image', $nginx)) {
                         $this->error('Image not found for service: nginx');
                         exit(1);
                     }
-                    if (! array_key_exists('image', $phpFpm)) {
+                    if (!array_key_exists('image', $phpFpm)) {
                         $this->error('Image not found for service: php-fpm');
                         exit(1);
                     }
@@ -95,11 +103,11 @@ class ComposeUpCommand extends Command
                     $nginxImage = $nginx['image'];
                     $phpFpmImage = $phpFpm['image'];
 
-                    if (! array_key_exists('ports', $nginx)) {
+                    if (!array_key_exists('ports', $nginx)) {
                         $this->error('Ports not found for service: nginx');
                         exit(1);
                     }
-                    if (! array_key_exists('ports', $phpFpm)) {
+                    if (!array_key_exists('ports', $phpFpm)) {
                         $this->error('Ports not found for service: php-fpm');
                         exit(1);
                     }
@@ -115,8 +123,8 @@ class ComposeUpCommand extends Command
 
                     $vars['API_END_POINT_DN'] = $config['api_end_point'];
 
-                    if (is_file(__DIR__.'/docker-compose/nginx-php-fpm.stub')) {
-                        $compose_data_services[] = str_replace(array_keys($vars), array_values($vars), file_get_contents(__DIR__.'/docker-compose/nginx-php-fpm.stub'));
+                    if (is_file(__DIR__ . '/docker-compose/nginx-php-fpm.stub')) {
+                        $compose_data_services[] = str_replace(array_keys($vars), array_values($vars), file_get_contents(__DIR__ . '/docker-compose/nginx-php-fpm.stub'));
                     }
                     break;
                 case 'octane':
@@ -124,31 +132,38 @@ class ComposeUpCommand extends Command
                     $vars['OCTANE_SERVICE_DN'] = $config['hostname'];
                     $vars['OCTANE_IMAGE_TAG'] = $config['image'];
                     $vars['OCTANE_PORTS'] = $config['ports'];
-                    if (is_file(__DIR__.'/docker-compose/nginx-php-fpm.stub')) {
-                        $compose_data_services[] = str_replace(array_keys($vars), array_values($vars), file_get_contents(__DIR__.'/docker-compose/octane.stub'));
+                    if (is_file(__DIR__ . '/docker-compose/nginx-php-fpm.stub')) {
+                        $compose_data_services[] = str_replace(array_keys($vars), array_values($vars), file_get_contents(__DIR__ . '/docker-compose/octane.stub'));
                     }
                     break;
                 case 'php-cli':
                     $vars = [];
-                    $file_to_load = __DIR__.'/docker-compose/php-cli.stub';
+                    $file_to_load = __DIR__ . '/docker-compose/php-cli.stub';
                     $vars['PHP_CLI_SERVICE_DN'] = $config['hostname'] ?? 'php-cli';
 
                     if (isset($config['hostname']) && isset($config['ports'])) {
                         $vars['PHP_CLI_PORTS'] = $config['ports'];
-                        $file_to_load = __DIR__.'/docker-compose/php-cli-network.stub';
+                        $file_to_load = __DIR__ . '/docker-compose/php-cli-network.stub';
                     }
                     $vars['PHP_CLI_IMAGE_TAG'] = $config['image'];
-                    if (is_file(__DIR__.'/docker-compose/php-cli.stub')) {
+                    if (is_file(__DIR__ . '/docker-compose/php-cli.stub')) {
                         $compose_data_services[] = str_replace(array_keys($vars), array_values($vars), file_get_contents($file_to_load));
                     }
                     break;
+                case 'zookeeper':
+                    $file_to_load = __DIR__ . '/docker-compose/zookeeper.stub';
+                    $compose_data_services[] = file_get_contents($file_to_load);
+                    break;
+                case 'kafka':
+                    $file_to_load = __DIR__ . '/docker-compose/kafka.stub';
+                    $compose_data_services[] = file_get_contents($file_to_load);
+                    break;
                 default:
-                    $this->error('Service not found: '.$service);
+                    $this->error('Service not found: ' . $service);
                     exit(1);
             }
         }
 
-        $composeFilePath = tempnam(sys_get_temp_dir(), 'docker-compose-nginx-php-fpm');
         $composeFileServices = implode("\n", $compose_data_services);
         $composeFileData = <<<EOT
 version: '3.2'
@@ -158,9 +173,15 @@ networks:
     uxmal-tech-network:
         driver: bridge
 EOT;
-        $this->warn('Creating temporary docker-compose file: '."\n".$composeFileData);
+        $this->saveAndRun($composeFileData);
+    }
+
+    private function saveAndRun(string $composeFileData): void
+    {
+        $composeFilePath = tempnam(sys_get_temp_dir(), 'docker-compose-nginx-php-fpm');
+        $this->warn('Creating temporary docker-compose file: ' . "\n" . $composeFileData);
         file_put_contents($composeFilePath, $composeFileData);
         $this->runDockerCmd(['compose', '-f', $composeFilePath, 'up']);
-
+        exit(0);
     }
 }
