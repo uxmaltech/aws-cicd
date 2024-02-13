@@ -89,7 +89,29 @@ RUN set -eux \
         yaml-dev \
         zlib-dev \
         zstd-dev \
-\
+    && true
+
+# Install PHP extensions
+RUN set -eux \
+# Install rdkafka
+#    && pecl install rdkafka \
+#    && docker-php-ext-enable rdkafka \
+#    && true \
+#\
+# Install php-rdkafka - oauthbearer-set-token (TODO: Remove when merged)
+    && curl -Lo /tmp/php-rdkafka.zip  https://github.com/cb-freddysart/php-rdkafka/archive/refs/heads/feat/oauthbearer-set-token.zip \
+    && unzip /tmp/php-rdkafka.zip -d /tmp \
+    && cd /tmp/php-rdkafka-feat-oauthbearer-set-token \
+    && phpize \
+    && ./configure \
+    && make -j$(nproc) \
+    && make install \
+    && rm -f /tmp/php-rdkafka.zip \
+    && rm -rf /tmp/php-rdkafka-feat-oauthbearer-set-token \
+    && docker-php-ext-enable rdkafka \
+    && true
+
+RUN set -eux \
 # Workaround for rabbitmq linking issue
     && ln -s /usr/lib /usr/local/lib64 \
 \
@@ -211,11 +233,6 @@ RUN set -eux \
         'enable-redis-igbinary="yes" enable-redis-zstd="yes" enable-redis-msgpack="yes" enable-redis-lz4="yes"' \
         redis \
     && docker-php-ext-enable redis \
-    && true \
-\
-# Install rdkafka
-    && pecl install rdkafka \
-    && docker-php-ext-enable rdkafka \
     && true \
 \
 # Install soap
