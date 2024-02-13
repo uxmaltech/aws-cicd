@@ -3,6 +3,12 @@ ARG PHP_VERSION="8.2.15"
 
 FROM php:${PHP_VERSION}-zts-alpine${ALPINE_VERSION}
 
+ARG MAINTAINER="Enrique Martinez <https://uxmal.tech>"
+ARG DESCRIPTION="Apache PHP v${PHP_VERSION} with extensions on top of Alpine Linux v${ALPINE_VERSION}."
+
+ENV PHP_VERSION=${PHP_VERSION}
+ENV ALPINE_VERSION=${ALPINE_VERSION}
+
 LABEL \
     Maintainer="Enrique Martinez <enmaca@hotmail.com>" \
     Description="PHP-ZTS v8.2.15 with extensions on top of Alpine Linux."
@@ -89,7 +95,29 @@ RUN set -eux \
         yaml-dev \
         zlib-dev \
         zstd-dev \
-\
+    && true
+
+# Install PHP extensions
+RUN set -eux \
+# Install rdkafka
+#    && pecl install rdkafka \
+#    && docker-php-ext-enable rdkafka \
+#    && true \
+#\
+# Install php-rdkafka - oauthbearer-set-token (TODO: Remove when merged)
+    && curl -Lo /tmp/php-rdkafka.zip  https://github.com/cb-freddysart/php-rdkafka/archive/refs/heads/feat/oauthbearer-set-token.zip \
+    && unzip /tmp/php-rdkafka.zip -d /tmp \
+    && cd /tmp/php-rdkafka-feat-oauthbearer-set-token \
+    && phpize \
+    && ./configure \
+    && make -j$(nproc) \
+    && make install \
+    && rm -f /tmp/php-rdkafka.zip \
+    && rm -rf /tmp/php-rdkafka-feat-oauthbearer-set-token \
+    && docker-php-ext-enable rdkafka \
+    && true
+
+RUN set -eux \
 # Workaround for rabbitmq linking issue
     && ln -s /usr/lib /usr/local/lib64 \
 \
@@ -206,28 +234,11 @@ RUN set -eux \
     && docker-php-ext-install -j$(nproc) pcntl \
     && true \
 \
-# ONLY 64-bit targets
-    && if [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "aarch64" ]; then \
-    # Install sqlsrv
-        pecl install sqlsrv; \
-        docker-php-ext-enable sqlsrv; \
-        true; \
-    # Install pdo_sqlsrv
-        pecl install pdo_sqlsrv; \
-        docker-php-ext-enable pdo_sqlsrv; \
-        true; \
-    fi \
-\
 # Install redis
     && pecl install --configureoptions \
         'enable-redis-igbinary="yes" enable-redis-zstd="yes" enable-redis-msgpack="yes" enable-redis-lz4="yes"' \
         redis \
     && docker-php-ext-enable redis \
-    && true \
-\
-# Install rdkafka
-    && pecl install rdkafka \
-    && docker-php-ext-enable rdkafka \
     && true \
 \
 # Install soap
@@ -326,6 +337,7 @@ RUN set -eux \
     && composer --version \
     && true
 
+
 RUN set -eux \
 # Remove few PHP-FPM default config files
     && rm -rf /usr/local/etc/php-fpm.d/zz-docker.conf \
@@ -342,6 +354,7 @@ RUN set -eux \
     && if [ -n "${PHP_ERROR}" ]; then echo "${PHP_ERROR}"; false; fi \
     && rm -f /usr/local/etc/php/php.ini \
     && true
+
 
 STOPSIGNAL SIGQUIT
 
