@@ -9,6 +9,7 @@ use Symfony\Component\Process\Process;
 class CreateBranchCommand extends Command
 {
     protected $signature = 'git:create-branch {name}';
+
     protected $description = 'Create a new branch in multiple directories';
 
     public function handle()
@@ -18,8 +19,9 @@ class CreateBranchCommand extends Command
         $directories = config('uxmaltech.git.repositories');
 
         foreach ($directories as $directory) {
-            if (!is_dir($directory)) {
+            if (! is_dir($directory)) {
                 $this->error("The directory `{$directory}` does not exist.");
+
                 continue;
             }
 
@@ -29,7 +31,7 @@ class CreateBranchCommand extends Command
             $process->run();
 
             // Executes after the command finishes
-            if (!$process->isSuccessful()) {
+            if (! $process->isSuccessful()) {
                 throw new ProcessFailedException($process);
             }
 
