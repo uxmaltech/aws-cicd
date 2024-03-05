@@ -93,7 +93,7 @@ class BuildAwsEcrConfigCommand extends Command
             $ecr_nginx_image,
         ];
 
-        $config = file_get_contents(__DIR__ . '/Stubs/tmpl-aws-ecr.stub');
+        $config = file_get_contents(__DIR__.'/Stubs/tmpl-aws-ecr.stub');
         $config = str_replace($search, $replace, $config);
 
         if (file_exists(config_path('aws-ecr.php'))) {
