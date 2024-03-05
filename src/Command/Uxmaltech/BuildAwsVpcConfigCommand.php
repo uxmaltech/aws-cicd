@@ -49,10 +49,10 @@ class BuildAwsVpcConfigCommand extends Command
 
         switch ($vpc_type) {
             case VpcTypeEnum::pub2_priv2_nat2->value:
-                $vpc_template_file = __DIR__.'/Stubs/tmpl-aws-vpc-2pub-2nat-2priv.php';
+                $vpc_template_file = __DIR__ . '/Stubs/tmpl-aws-vpc-2pub-2nat-2priv.stub';
                 break;
             case VpcTypeEnum::pub2_priv1_nat1->value:
-                $vpc_template_file = __DIR__.'/Stubs/tmpl-aws-vpc-2pub-1nat-1priv.php';
+                $vpc_template_file = __DIR__ . '/Stubs/tmpl-aws-vpc-2pub-1nat-1priv.stub';
                 break;
             default:
                 $this->error('Opción no implementada');
