@@ -27,7 +27,7 @@ class CreatePullRequestCommand extends Command
             $body = $this->ask('Please enter the pull request description');
         }
 
-        $githubToken = config('uxmaltech.git.github_token');
+        $githubToken = config('uxmaltech.git.token');
         if( $githubToken == 'YOUR_GITHUB_TOKEN' ) {
             $this->error('Please set your GitHub token in the `github_token` key of the `git` configuration in the `uxmaltech.php` file.');
             return;

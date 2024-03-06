@@ -15,6 +15,7 @@ use Uxmal\Devtools\Command\Docker\ComposeUpCommand;
 use Uxmal\Devtools\Command\GitHub\CommitPushCommand;
 use Uxmal\Devtools\Command\GitHub\CreateBranchCommand;
 use Uxmal\Devtools\Command\GitHub\CreatePullRequestCommand;
+use Uxmal\Devtools\Command\GitHub\ResetTokenCommand;
 use Uxmal\Devtools\Command\InstallCommand;
 use Uxmal\Devtools\Command\TestCommand;
 use Uxmal\Devtools\Command\Uxmaltech\AddBackOfficeUICommand;
@@ -66,6 +67,7 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
                 CreateBranchCommand::class,
                 CommitPushCommand::class,
                 CreatePullRequestCommand::class,
+                ResetTokenCommand::class,
             ]);
         }
     }
@@ -116,6 +118,7 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
             CreateBranchCommand::class,
             CommitPushCommand::class,
             CreatePullRequestCommand::class,
+            ResetTokenCommand::class,
         ];
     }
 }
