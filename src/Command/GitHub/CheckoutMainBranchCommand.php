@@ -9,6 +9,7 @@ use Symfony\Component\Process\Process;
 class CheckoutMainBranchCommand extends Command
 {
     protected $signature = 'github:checkout-main';
+
     protected $description = 'Delete the current branch (if not main), checkout, and update the main branch for multiple repositories.';
 
     public function handle(): void
@@ -17,8 +18,9 @@ class CheckoutMainBranchCommand extends Command
 
         foreach ($repositories as $directory) {
             $repositoryPath = realpath($directory);
-            if (!is_dir($repositoryPath)) {
+            if (! is_dir($repositoryPath)) {
                 $this->error("The directory `$repositoryPath` does not exist.");
+
                 continue;
             }
 
@@ -28,7 +30,7 @@ class CheckoutMainBranchCommand extends Command
             $process = new Process(['git', '-C', $repositoryPath, 'rev-parse', '--abbrev-ref', 'HEAD']);
             $process->run();
 
-            if (!$process->isSuccessful()) {
+            if (! $process->isSuccessful()) {
                 throw new ProcessFailedException($process);
             }
 
@@ -46,14 +48,14 @@ class CheckoutMainBranchCommand extends Command
             // Checkout the main branch
             $checkoutProcess = new Process(['git', '-C', $repositoryPath, 'checkout', 'main']);
             $checkoutProcess->run();
-            if (!$checkoutProcess->isSuccessful()) {
+            if (! $checkoutProcess->isSuccessful()) {
                 throw new ProcessFailedException($checkoutProcess);
             }
 
             // Pull the latest changes
             $pullProcess = new Process(['git', '-C', $repositoryPath, 'pull', 'origin', 'main']);
             $pullProcess->run();
-            if (!$pullProcess->isSuccessful()) {
+            if (! $pullProcess->isSuccessful()) {
                 throw new ProcessFailedException($pullProcess);
             }
 

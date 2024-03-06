@@ -10,6 +10,7 @@ use Symfony\Component\Process\Process;
 class CommitPushCommand extends Command
 {
     protected $signature = 'github:commit-push';
+
     protected $description = 'Commit and push changes in the current branch for multiple directories';
 
     public function handle(): void
@@ -20,8 +21,9 @@ class CommitPushCommand extends Command
 
         foreach ($repositories as $directory) {
             $repositoryPath = realpath($directory);
-            if (!is_dir($repositoryPath)) {
+            if (! is_dir($repositoryPath)) {
                 $this->error("The directory `$repositoryPath` does not exist.");
+
                 continue;
             }
 
@@ -31,25 +33,26 @@ class CommitPushCommand extends Command
             $statusProcess = new Process(['git', '-C', $repositoryPath, 'status', '--porcelain']);
             $statusProcess->run();
 
-            if (!$statusProcess->isSuccessful()) {
+            if (! $statusProcess->isSuccessful()) {
                 throw new ProcessFailedException($statusProcess);
             }
 
             if (empty(trim($statusProcess->getOutput()))) {
                 $this->info("No changes to commit in '$repositoryPath'. Skipping...");
+
                 continue;
             }
 
             $process = new Process(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], $repositoryPath);
             $process->run();
 
-            if (!$process->isSuccessful()) {
+            if (! $process->isSuccessful()) {
                 throw new ProcessFailedException($process);
             }
 
             $currentBranch = trim($process->getOutput());
 
-            $commitMessage = $currentDate . "\nCommit branch " .$currentBranch;
+            $commitMessage = $currentDate."\nCommit branch ".$currentBranch;
 
             // Add all changes
             $this->executeProcess(['git', '-C', $repositoryPath, 'add', '.']);
@@ -71,7 +74,7 @@ class CommitPushCommand extends Command
         $process = new Process($command);
         $process->run();
 
-        if (!$process->isSuccessful()) {
+        if (! $process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
 

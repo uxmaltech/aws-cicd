@@ -21,6 +21,7 @@ class CreateBranchCommand extends Command
         foreach ($repositories as $directory) {
             if (! is_dir($directory)) {
                 $this->error("The directory `$directory` does not exist.");
+
                 continue;
             }
 

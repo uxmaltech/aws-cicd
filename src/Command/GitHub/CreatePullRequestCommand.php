@@ -2,15 +2,16 @@
 
 namespace Uxmal\Devtools\Command\GitHub;
 
+use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Console\Command;
-use GuzzleHttp\Client;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 
 class CreatePullRequestCommand extends Command
 {
     protected $signature = 'github:create-pull-request {title}';
+
     protected $description = 'Create a GitHub pull request for multiple repositories with the current branch against main, skip if up to date.';
 
     /**
@@ -21,18 +22,18 @@ class CreatePullRequestCommand extends Command
     {
         $repositories = config('uxmaltech.git.repositories');
         $title = $this->argument('title');
-        if (is_file('./' . $title . '.message')) {
-            $body = file_get_contents('./' . $title . '.message');
+        if (is_file('./'.$title.'.message')) {
+            $body = file_get_contents('./'.$title.'.message');
         } else {
             $body = $this->ask('Please enter the pull request description');
         }
 
         $githubToken = config('uxmaltech.git.token');
-        if( $githubToken == 'YOUR_GITHUB_TOKEN' ) {
+        if ($githubToken == 'YOUR_GITHUB_TOKEN') {
             $this->error('Please set your GitHub token in the `github_token` key of the `git` configuration in the `uxmaltech.php` file.');
+
             return;
         }
-
 
         $this->info('Committing and pushing changes repository current branches...');
         $this->call('github:commit-push');
@@ -42,8 +43,9 @@ class CreatePullRequestCommand extends Command
             $repositoryPath = realpath($repositoryPath);
 
             // Check if the repository path exists
-            if (!is_dir($repositoryPath)) {
+            if (! is_dir($repositoryPath)) {
                 $this->error("The directory for repository '{$repository}' does not exist.");
+
                 continue;
             }
 
@@ -51,7 +53,7 @@ class CreatePullRequestCommand extends Command
             $process = new Process(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], $repositoryPath);
             $process->run();
 
-            if (!$process->isSuccessful()) {
+            if (! $process->isSuccessful()) {
                 throw new ProcessFailedException($process);
             }
 
@@ -73,7 +75,7 @@ class CreatePullRequestCommand extends Command
                         'Accept' => 'application/vnd.github+json',
                         'Authorization' => 'Bearer '.$githubToken,
                         'Content-Type' => 'application/json',
-                        'X-GitHub-Api-Version' => '2022-11-28'
+                        'X-GitHub-Api-Version' => '2022-11-28',
                     ],
                     'json' => [
                         'title' => $title,
