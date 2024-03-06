@@ -21,8 +21,8 @@ class CreatePullRequestCommand extends Command
     {
         $repositories = config('uxmaltech.git.repositories');
         $title = $this->argument('title');
-        if( is_file('./'.$title.'.message')){
-            $body = file_get_contents('./'.$title.'.message');
+        if (is_file('./' . $title . '.message')) {
+            $body = file_get_contents('./' . $title . '.message');
         } else {
             $body = $this->ask('Please enter the pull request description');
         }
@@ -30,9 +30,6 @@ class CreatePullRequestCommand extends Command
 
         $this->info('Committing and pushing changes repository current branches...');
         $this->call('github:commit-push');
-
-        dump($body);
-
 
         foreach ($repositories as $repository => $repositoryPath) {
             // Assume $repositoryPath is the path to the repository directory
@@ -62,33 +59,30 @@ class CreatePullRequestCommand extends Command
             // If the exit code is 0, there are no differences
             if ($diffProcess->isSuccessful()) {
                 $this->info("No changes detected for '$repository' between branches '$head' and '$base'. Skipping pull request creation.");
-                continue;
-                $deleteProcess = new Process(['git', 'branch', '-d', $head], $repositoryPath);
-                $deleteProcess->run();
-            }
-
-            $this->info("Creating pull request for '$repository' from '$head' to '$base'...");
-            continue;
-            $client = new Client();
-            $response = $client->post("https://api.github.com/repos/$repository/pulls", [
-                'headers' => [
-                    'Authorization' => 'token YOUR_GITHUB_TOKEN',
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'title' => $title,
-                    'head' => $head,
-                    'base' => $base,
-                    'body' => $body,
-                ],
-            ]);
-
-            if ($response->getStatusCode() == 201) {
-                $this->info("Pull request created successfully for $repository from $head to $base!");
             } else {
-                $this->error("Failed to create the pull request for $repository.");
+
+                $this->info("Creating pull request for '$repository' from '$head' to '$base'...");
+
+                $client = new Client();
+                $response = $client->post("https://api.github.com/repos/$repository/pulls", [
+                    'headers' => [
+                        'Authorization' => 'token YOUR_GITHUB_TOKEN',
+                        'Content-Type' => 'application/json',
+                    ],
+                    'json' => [
+                        'title' => $title,
+                        'head' => $head,
+                        'base' => $base,
+                        'body' => $body,
+                    ],
+                ]);
+
+                if ($response->getStatusCode() == 201) {
+                    $this->info("Pull request created successfully for $repository from $head to $base!");
+                } else {
+                    $this->error("Failed to create the pull request for $repository.");
+                }
             }
         }
-
     }
 }
