@@ -12,6 +12,7 @@ use Uxmal\Devtools\Command\BuildInfrastructureConfigCommand;
 use Uxmal\Devtools\Command\Docker\BuildAppImagesCommand;
 use Uxmal\Devtools\Command\Docker\BuildBaseImagesCommand;
 use Uxmal\Devtools\Command\Docker\ComposeUpCommand;
+use Uxmal\Devtools\Command\GitHub\CheckoutMainBranchCommand;
 use Uxmal\Devtools\Command\GitHub\CommitPushCommand;
 use Uxmal\Devtools\Command\GitHub\CreateBranchCommand;
 use Uxmal\Devtools\Command\GitHub\CreatePullRequestCommand;
@@ -68,6 +69,7 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
                 CommitPushCommand::class,
                 CreatePullRequestCommand::class,
                 ResetTokenCommand::class,
+                CheckoutMainBranchCommand::class,
             ]);
         }
     }
@@ -119,6 +121,7 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
             CommitPushCommand::class,
             CreatePullRequestCommand::class,
             ResetTokenCommand::class,
+            CheckoutMainBranchCommand::class,
         ];
     }
 }
