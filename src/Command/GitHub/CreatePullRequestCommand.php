@@ -27,6 +27,12 @@ class CreatePullRequestCommand extends Command
             $body = $this->ask('Please enter the pull request description');
         }
 
+        $githubToken = config('uxmaltech.git.github_token');
+        if( $githubToken == 'YOUR_GITHUB_TOKEN' ) {
+            $this->error('Please set your GitHub token in the `github_token` key of the `git` configuration in the `uxmaltech.php` file.');
+            return;
+        }
+
 
         $this->info('Committing and pushing changes repository current branches...');
         $this->call('github:commit-push');
@@ -60,9 +66,7 @@ class CreatePullRequestCommand extends Command
             if ($diffProcess->isSuccessful()) {
                 $this->info("No changes detected for '$repository' between branches '$head' and '$base'. Skipping pull request creation.");
             } else {
-
                 $this->info("Creating pull request for '$repository' from '$head' to '$base'...");
-
                 $client = new Client();
                 $response = $client->post("https://api.github.com/repos/$repository/pulls", [
                     'headers' => [
