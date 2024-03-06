@@ -12,7 +12,9 @@ use Uxmal\Devtools\Command\BuildInfrastructureConfigCommand;
 use Uxmal\Devtools\Command\Docker\BuildAppImagesCommand;
 use Uxmal\Devtools\Command\Docker\BuildBaseImagesCommand;
 use Uxmal\Devtools\Command\Docker\ComposeUpCommand;
-use Uxmal\Devtools\Command\Git\CreateBranchCommand;
+use Uxmal\Devtools\Command\GitHub\CommitPushCommand;
+use Uxmal\Devtools\Command\GitHub\CreateBranchCommand;
+use Uxmal\Devtools\Command\GitHub\CreatePullRequestCommand;
 use Uxmal\Devtools\Command\InstallCommand;
 use Uxmal\Devtools\Command\TestCommand;
 use Uxmal\Devtools\Command\Uxmaltech\AddBackOfficeUICommand;
@@ -60,8 +62,10 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
                 ECRListRepositoriesCommand::class,
                 ECRDockerLoginCommand::class,
                 DeployInfrastructureCommand::class,
-                // Git
+                // GitHub
                 CreateBranchCommand::class,
+                CommitPushCommand::class,
+                CreatePullRequestCommand::class,
             ]);
         }
     }
@@ -108,8 +112,10 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
             ECRListRepositoriesCommand::class,
             ECRDockerLoginCommand::class,
             DeployInfrastructureCommand::class,
-            // Git
+            // GitHub
             CreateBranchCommand::class,
+            CommitPushCommand::class,
+            CreatePullRequestCommand::class,
         ];
     }
 }
