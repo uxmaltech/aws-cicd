@@ -27,6 +27,10 @@ class CreatePullRequestCommand extends Command
             $body = $this->ask('Please enter the pull request description');
         }
 
+
+        $this->info('Committing and pushing changes repository current branches...');
+        $this->call('github:commit-push');
+
         dump($body);
 
 
