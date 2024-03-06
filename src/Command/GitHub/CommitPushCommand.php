@@ -39,7 +39,7 @@ class CommitPushCommand extends Command
                 $this->info("No changes to commit in '$repositoryPath'. Skipping...");
                 continue;
             }
-            
+
             $process = new Process(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], $repositoryPath);
             $process->run();
 
