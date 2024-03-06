@@ -70,8 +70,10 @@ class CreatePullRequestCommand extends Command
                 $client = new Client();
                 $response = $client->post("https://api.github.com/repos/$repository/pulls", [
                     'headers' => [
-                        'Authorization' => 'token '.$githubToken,
+                        'Accept' => 'application/vnd.github+json',
+                        'Authorization' => 'Bearer '.$githubToken,
                         'Content-Type' => 'application/json',
+                        'X-GitHub-Api-Version' => '2022-11-28'
                     ],
                     'json' => [
                         'title' => $title,
