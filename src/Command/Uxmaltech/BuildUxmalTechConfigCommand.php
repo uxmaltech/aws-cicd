@@ -157,7 +157,7 @@ class BuildUxmalTechConfigCommand extends Command
             $app_feature_aws_ecs ? 'true' : 'false',
         ];
 
-        $template = __DIR__.'/Stubs/tmpl-uxmaltech.php';
+        $template = __DIR__.'/Stubs/tmpl-uxmaltech.stub';
 
         $config = file_get_contents($template);
         $config = str_replace($search, $replace, $config);
