@@ -32,7 +32,11 @@ class CreatePullRequestCommand extends Command
         $this->info('Committing and pushing changes repository current branches...');
         $this->call('github:commit-push');
 
-        $ini_data = parse_ini_file('./'.$branch.'.message.ini', true);
+        $ini_data = [];
+        if( file_exists('./'.$branch.'.message.ini') ){
+            $ini_data = parse_ini_file('./'.$branch.'.message.ini', true);
+        }
+
 
         foreach ($repositories as $repository => $repositoryPath) {
 
