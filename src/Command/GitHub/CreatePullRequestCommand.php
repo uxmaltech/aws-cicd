@@ -34,14 +34,11 @@ class CreatePullRequestCommand extends Command
 
         $ini_data = [];
         if( file_exists('./'.$branch.'.message.ini') ){
-            dump('ok');
             $ini_data = parse_ini_file('./'.$branch.'.message.ini', true);
-            dump($ini_data);
         }
 
 
         foreach ($repositories as $repository => $repositoryPath) {
-            dump($repository);
             if (isset($ini_data[$repository])) {
                 $body = "";
                 foreach($ini_data[$repository] as $key => $value) {
@@ -52,9 +49,6 @@ class CreatePullRequestCommand extends Command
             } else {
                 $body = $this->ask('Please enter the pull request description');
             }
-
-            dump($repository, $repositoryPath, $body);
-            continue;
 
             // Assume $repositoryPath is the path to the repository directory
             $repositoryPath = realpath($repositoryPath);
@@ -85,6 +79,7 @@ class CreatePullRequestCommand extends Command
                 $this->info("No changes detected for '$repository' between branches '$head' and '$base'. Skipping pull request creation.");
             } else {
                 $this->info("Creating pull request for '$repository' from '$head' to '$base' => https://api.github.com/repos/$repository/pulls ...");
+                $this->info("Body: $body");
                 $client = new Client();
                 $response = $client->post("https://api.github.com/repos/$repository/pulls", [
                     'headers' => [
