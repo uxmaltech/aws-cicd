@@ -41,7 +41,7 @@ class CreatePullRequestCommand extends Command
 
 
         foreach ($repositories as $repository => $repositoryPath) {
-
+            dump($repository);
             if (isset($ini_data[$repository])) {
                 $body = "";
                 foreach($ini_data[$repository] as $key => $value) {
