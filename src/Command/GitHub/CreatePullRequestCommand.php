@@ -10,7 +10,7 @@ use Symfony\Component\Process\Process;
 
 class CreatePullRequestCommand extends Command
 {
-    protected $signature = 'github:create-pull-request {title}';
+    protected $signature = 'github:create-pull-request {branch}';
 
     protected $description = 'Create a GitHub pull request for multiple repositories with the current branch against main, skip if up to date.';
 
@@ -21,31 +21,41 @@ class CreatePullRequestCommand extends Command
     public function handle(): void
     {
         $repositories = config('uxmaltech.git.repositories');
-        $title = $this->argument('title');
-        if (is_file('./'.$title.'.message')) {
-            $body = file_get_contents('./'.$title.'.message');
-        } else {
-            $body = $this->ask('Please enter the pull request description');
-        }
+        $branch = $this->argument('branch');
 
         $githubToken = config('uxmaltech.git.token');
         if ($githubToken == 'YOUR_GITHUB_TOKEN') {
             $this->error('Please set your GitHub token in the `github_token` key of the `git` configuration in the `uxmaltech.php` file.');
-
             return;
         }
 
         $this->info('Committing and pushing changes repository current branches...');
         $this->call('github:commit-push');
 
+        $ini_data = [];
+        if( file_exists('./'.$branch.'.message.ini') ){
+            $ini_data = parse_ini_file('./'.$branch.'.message.ini', true);
+        }
+
+
         foreach ($repositories as $repository => $repositoryPath) {
+            if (isset($ini_data[$repository])) {
+                $body = "";
+                foreach($ini_data[$repository] as $key => $value) {
+                    if(str_starts_with($key, 'line')){
+                        $body .= $value."\n";
+                    }
+                }
+            } else {
+                $body = $this->ask('Please enter the pull request description');
+            }
+
             // Assume $repositoryPath is the path to the repository directory
             $repositoryPath = realpath($repositoryPath);
 
             // Check if the repository path exists
             if (! is_dir($repositoryPath)) {
                 $this->error("The directory for repository '{$repository}' does not exist.");
-
                 continue;
             }
 
@@ -69,6 +79,7 @@ class CreatePullRequestCommand extends Command
                 $this->info("No changes detected for '$repository' between branches '$head' and '$base'. Skipping pull request creation.");
             } else {
                 $this->info("Creating pull request for '$repository' from '$head' to '$base' => https://api.github.com/repos/$repository/pulls ...");
+                $this->info("Body: $body");
                 $client = new Client();
                 $response = $client->post("https://api.github.com/repos/$repository/pulls", [
                     'headers' => [
@@ -78,7 +89,7 @@ class CreatePullRequestCommand extends Command
                         'X-GitHub-Api-Version' => '2022-11-28',
                     ],
                     'json' => [
-                        'title' => $title,
+                        'title' => $branch,
                         'head' => $head,
                         'base' => $base,
                         'body' => $body,

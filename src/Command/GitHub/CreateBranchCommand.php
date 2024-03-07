@@ -37,7 +37,12 @@ class CreateBranchCommand extends Command
             $this->info($process->getOutput());
         }
 
-        touch('./'.$branchName.'.message');
+        $messages_text = "";
+        foreach( array_keys($repositories) as $repository_name ){
+            $messages_text .= "[{$repository_name}]\nline1=\"\"\n\n";
+        }
+        touch('./'.$branchName.'.message.ini');
+        file_put_contents('./'.$branchName.'.message.ini', $messages_text);
 
         $this->info('Branch creation process completed.');
     }
