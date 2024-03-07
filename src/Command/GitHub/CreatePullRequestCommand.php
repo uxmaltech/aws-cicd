@@ -36,6 +36,7 @@ class CreatePullRequestCommand extends Command
         if( file_exists('./'.$branch.'.message.ini') ){
             dump('ok');
             $ini_data = parse_ini_file('./'.$branch.'.message.ini', true);
+            dump($ini_data);
         }
 
 
