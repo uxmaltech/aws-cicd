@@ -3,6 +3,8 @@
 namespace Uxmal\Devtools;
 
 use Illuminate\Contracts\Support\DeferrableProvider;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Uxmal\Devtools\Command\Aws\DeployInfrastructureCommand;
 use Uxmal\Devtools\Command\Aws\ECRDockerLoginCommand;
@@ -16,6 +18,7 @@ use Uxmal\Devtools\Command\GitHub\CheckoutMainBranchCommand;
 use Uxmal\Devtools\Command\GitHub\CommitPushCommand;
 use Uxmal\Devtools\Command\GitHub\CreateBranchCommand;
 use Uxmal\Devtools\Command\GitHub\CreatePullRequestCommand;
+use Uxmal\Devtools\Command\GitHub\CreateWebhookCommand;
 use Uxmal\Devtools\Command\GitHub\ResetTokenCommand;
 use Uxmal\Devtools\Command\InstallCommand;
 use Uxmal\Devtools\Command\TestCommand;
@@ -25,14 +28,23 @@ use Uxmal\Devtools\Command\Uxmaltech\BuildAwsEcsConfigCommand;
 use Uxmal\Devtools\Command\Uxmaltech\BuildAwsVpcConfigCommand;
 use Uxmal\Devtools\Command\Uxmaltech\BuildDockerizedConfigCommand;
 use Uxmal\Devtools\Command\Uxmaltech\BuildUxmalTechConfigCommand;
+use Uxmal\Devtools\Http\Controllers\GithubWebhookController;
+
 
 class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvider
 {
+
+    protected $namespace = 'Uxmal\\Devtools\\Http\\Controllers'; // here
+    public function register(): void
+    {
+    }
     /**
      * Bootstrap any application services.
      */
     public function boot(): void
     {
+        $this->loadRoutesFrom(__DIR__.'/routes/web.php');
+
         $this->registerCommands();
         $this->configurePublishing();
     }
@@ -66,6 +78,7 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
                 DeployInfrastructureCommand::class,
                 // GitHub
                 CreateBranchCommand::class,
+                CreateWebhookCommand::class,
                 CommitPushCommand::class,
                 CreatePullRequestCommand::class,
                 ResetTokenCommand::class,
@@ -81,12 +94,12 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../docker-images' => $this->app->basePath('docker-images'),
+                __DIR__ . '/../docker-images' => $this->app->basePath('docker-images'),
             ], ['aws-cicd-docker']);
         }
 
         $this->publishes([
-            __DIR__.'/config/aws-cicd.php' => config_path('aws-cicd.php'),
+            __DIR__ . '/config/aws-cicd.php' => config_path('aws-cicd.php'),
         ], ['aws-cicd-config']);
     }
 
@@ -118,10 +131,21 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
             DeployInfrastructureCommand::class,
             // GitHub
             CreateBranchCommand::class,
+            CreateWebhookCommand::class,
             CommitPushCommand::class,
             CreatePullRequestCommand::class,
             ResetTokenCommand::class,
             CheckoutMainBranchCommand::class,
         ];
+    }
+
+    public function registerRoutes(): void
+    {
+
+        // Log::debug('Registering routes for DevtoolsServiceProvider');
+        // Route::controller(GithubWebhookController::class)->group(function ($router) {
+        //     $router->post('/github/webhook', 'handle')->name('github.webhook');
+        //     $router->get('/github/webhook', 'test')->name('github.webhook.test');
+        // });
     }
 }
