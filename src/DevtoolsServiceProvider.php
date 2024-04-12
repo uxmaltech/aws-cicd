@@ -31,10 +31,10 @@ use Uxmal\Devtools\Command\Uxmaltech\BuildUxmalTechConfigCommand;
 use Uxmal\Devtools\Http\Controllers\GithubWebhookController;
 
 
-class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvider
+class DevtoolsServiceProvider extends ServiceProvider
 {
 
-    protected $namespace = 'Uxmal\\Devtools\\Http\\Controllers'; // here
+    protected $namespace = 'Uxmal\\Devtools\\Http\\Controllers';
     public function register(): void
     {
     }
@@ -43,7 +43,7 @@ class DevtoolsServiceProvider extends ServiceProvider implements DeferrableProvi
      */
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__.'/routes/web.php');
+        $this->loadRoutesFrom(__DIR__ . '/routes/web.php');
 
         $this->registerCommands();
         $this->configurePublishing();
