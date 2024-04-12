@@ -74,6 +74,5 @@ class InstallCommand extends Command
             '--tag' => 'aws-cicd-docker',
             '--force' => true,
         ]);
-
     }
 }

@@ -7,18 +7,34 @@ namespace Uxmal\Devtools\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Process;
 
 class GithubWebhookController extends Controller
 {
 
+  protected $validRepositories = [];
+
+  function __construct()
+  {
+
+    $this->validRepositories = config('uxmaltech.git.repositories') ?? [];
+    Log::debug('Valid repositories: ' . json_encode($this->validRepositories));
+  }
+
   // Return the trigger event
   // @param array $header
   // Possible values inside the `x-github-event` are
-  // pull_request, push, release, workflow_job, issue
+  // pull_request, push, release, workflow_job, issue, create
   private function getEvent($headers)
   {
     $event = $headers['x-github-event'];
     return $event[0];
+  }
+
+  private function isMainBranch($ref)
+  {
+
+    return $ref == "refs/heads/main" || $ref == "refs/heads/master";
   }
 
   public function handle(Request $request)
@@ -39,13 +55,13 @@ class GithubWebhookController extends Controller
         $merged_by = $pull_request['merged_by']['login'] ?? null;
         $number = $pull_request['number'];
 
-        Log::info('Pull request merged.', [
-          'pull_request' => $payload['pull_request'],
-          'is_merged' => $is_merged,
-          'merged_by' => $merged_by,
-          'number' => $number ?? 0
-        ]);
+        Log::debug('Running build for repository: ' . $repository);
+        $this->runBuild($repository);
       }
+    } elseif ($event == "push" && $this->isMainBranch($ref)) {
+      Log::info(
+        'Push to master detected',
+      );
     } else {
       Log::info('Event not handled.', [
         'ref' => $ref,
@@ -54,6 +70,40 @@ class GithubWebhookController extends Controller
         'payload' => $payload
       ]);
     }
-    return response()->json(['status' => 'ok'])->setStatusCode(200);
+    return response()->setStatusCode(200);
+  }
+
+  // Run the build process for a given repository
+  // @param string $repository
+  // @return void
+  // @throws Exception
+  private function runBuild(string $repository)
+  {
+    try {
+      // TODO:: Define the list of valid modes
+      $mode = strtolower(config('uxmaltech.mode') ?? '');
+      $builder = null;
+
+      switch ($mode) {
+        case 'docker':
+          $builder = new \Uxmal\Devtools\Services\DockerAppBuilder();
+          break;
+        case 'aws':
+          $builder = new \Uxmal\Devtools\Services\AwsAppBuilder();
+          break;
+        case 'local':
+        case 'dev':
+          $builder = new \Uxmal\Devtools\Services\LocalAppBuilder();
+      }
+      if ($mode == 'docker') {
+      } else {
+        $builder = new \Uxmal\Devtools\Services\LocalAppBuilder();
+      }
+      $builder->build($repository);
+    } catch (\Exception $e) {
+      Log::error('Error building repository: ' . $repository, [
+        'error' => $e->getMessage()
+      ]);
+    }
   }
 }
