@@ -12,6 +12,7 @@ use RuntimeException;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+use Illuminate\Support\Facades\Log;
 
 trait GeneralUtils
 {
@@ -189,26 +190,25 @@ trait GeneralUtils
     {
         $this->devMode = config('uxmaltech.dev_mode', false);
 
-        if ($this->hasPendingGitCommits($this->laravel->basePath()) && ! $this->devMode) {
+        if ($this->hasPendingGitCommits($this->laravel->basePath()) && !$this->devMode) {
             $this->warn('El directorio de trabajo tiene cambios pendientes. Por favor, utilize <comment>git commit</comment> o <comment>stash</comment>');
-            if (! $this->confirm('¿Deseas continuar?', true)) {
+            if (!$this->confirm('¿Deseas continuar?', true)) {
                 $this->error('Operación cancelada por el usuario.');
                 exit(0);
             }
-
         }
 
-        if (! $this->isCommandAvailable('docker')) {
+        if (!$this->isCommandAvailable('docker')) {
             $this->error('Docker is not available. Please install Docker first.');
             exit(0);
         }
 
-        if (! $this->isCommandAvailable('git')) {
+        if (!$this->isCommandAvailable('git')) {
             $this->error('Git is not available. Please install Git first.');
             exit(0);
         }
 
-        if (! $this->isCommandAvailable('composer')) {
+        if (!$this->isCommandAvailable('composer')) {
             $this->error('Composer is not available (composer binary). Please install Composer first.');
             exit(1);
         }
@@ -221,12 +221,12 @@ trait GeneralUtils
             if ($this->gitTag) {
                 $this->ecrImageTag = $this->gitTag;
             } else {
-                $this->ecrImageTag = (($this->gitBranch) ? $this->gitBranch.'-' : '').(($this->gitCommit) ? $this->gitCommit : '');
+                $this->ecrImageTag = (($this->gitBranch) ? $this->gitBranch . '-' : '') . (($this->gitCommit) ? $this->gitCommit : '');
             }
         }
 
         if ($this->devMode) {
-            $this->ecrImageTag = 'dev-'.bin2hex(random_bytes(3));
+            $this->ecrImageTag = 'dev-' . bin2hex(random_bytes(3));
         }
 
         /********** END CHECKS **********/
@@ -238,14 +238,14 @@ trait GeneralUtils
         $this->clusterIntranetDomain = config('aws-cicd.cluster.intranet.domain', 'uxmal-devtools-aws.intranet');
         $this->clusterIntranetSubdomain = config('aws-cicd.cluster.intranet.subdomain', 'laravel-app');
 
-        $this->clusterNginxServiceHost = 'nginx.'.$this->clusterIntranetSubdomain.'.'.$this->clusterIntranetDomain;
-        $this->clusterPhpFpmServiceHost = 'php-fpm.'.$this->clusterIntranetSubdomain.'.'.$this->clusterIntranetDomain;
+        $this->clusterNginxServiceHost = 'nginx.' . $this->clusterIntranetSubdomain . '.' . $this->clusterIntranetDomain;
+        $this->clusterPhpFpmServiceHost = 'php-fpm.' . $this->clusterIntranetSubdomain . '.' . $this->clusterIntranetDomain;
 
         $this->clusterContainerPhpFpmPort = config('aws-cicd.cluster.containers.php-fpm.port', 9000); // clusterContainerPhpFpmPort
         // Container PHP-FPM (Base From)
         $this->clusterContainerPhpFpmAlpineVersion = config('aws-cicd.dockerized.containers.php-fpm.alpineVersion', '3.19'); // phpFpmAlpineVersion
         $this->clusterContainerPhpFpmVersion = config('aws-cicd.dockerized.containers.php-fpm.phpVersion', '8.2');
-        $this->clusterContainerPhpFpmBaseImage = 'php'.$this->clusterContainerPhpFpmVersion.'-fpm-alpine'.$this->clusterContainerPhpFpmAlpineVersion;
+        $this->clusterContainerPhpFpmBaseImage = 'php' . $this->clusterContainerPhpFpmVersion . '-fpm-alpine' . $this->clusterContainerPhpFpmAlpineVersion;
 
         // Container PHP-FPM (Base)
         $this->clusterContainerPhpFpmTag = config('aws-cicd.dockerized.containers.php-fpm.tag', 'latest');
@@ -269,7 +269,7 @@ trait GeneralUtils
         $this->clusterContainerNginxRepositoryTag = "$this->clusterContainerNginxRepository:$this->clusterContainerNginxTag"; // nginxRepositoryTag
 
         // Container NGINX (Application)
-        $this->clusterContainerNginxAppRepository = 'app-nginx-'.$this->clusterName;
+        $this->clusterContainerNginxAppRepository = 'app-nginx-' . $this->clusterName;
         $this->clusterContainerNginxAppRepositoryTag = "$this->clusterContainerNginxAppRepository:$this->ecrImageTag";
         $this->clusterContainerNginxAppRepositoryTagLatest = "$this->clusterContainerNginxAppRepository:latest";
 
@@ -303,7 +303,7 @@ trait GeneralUtils
         $this->laravelAppEmail = config('aws-cicd.laravel.app.email', 'author@email.com');
         $this->laravelAppName = strtolower(config('aws-cicd.laravel.app.name', 'laravel-app'));
         $this->laravelAppEnv = config('aws-cicd.laravel.app.env', 'production');
-        $this->laravelAppKey = config('aws-cicd.laravel.app.key', 'base64:'.base64_encode(Str::random(32)));
+        $this->laravelAppKey = config('aws-cicd.laravel.app.key', 'base64:' . base64_encode(Str::random(32)));
         $this->laravelAppDebug = config('aws-cicd.laravel.app.debug', false);
         $this->laravelAppUrl = config('aws-cicd.laravel.app.url', 'http://localhost');
 
@@ -358,7 +358,7 @@ trait GeneralUtils
         $process->run();
 
         // Check if the process was successful
-        if (! $process->isSuccessful()) {
+        if (!$process->isSuccessful()) {
             return false;
         }
 
@@ -376,7 +376,7 @@ trait GeneralUtils
 
         $process->run();
 
-        if (! $process->isSuccessful()) {
+        if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
 
@@ -433,18 +433,17 @@ trait GeneralUtils
                 if (empty($composerGlobalAccessToken)) {
                     $this->runCmd(['composer', 'config', '--global', '--auth', 'github-oauth.github.com', $this->personalAccessToken]);
                 } elseif ($composerGlobalAccessToken === $this->personalAccessToken) {
-                    $this->line('Personal Access Token already added.'."\t\t".'[<comment>OK</comment>]');
+                    $this->line('Personal Access Token already added.' . "\t\t" . '[<comment>OK</comment>]');
                 } else {
                     $this->warn('Personal Access Token already added to composer global config but is different.');
                 }
-
             }
 
             /** Get Repositories to copy from Package JSON  (Dev Mode) */
             $repositories = $composerJson->getRepositories();
             foreach ($repositories as $repository) {
                 if ($repository->getType() === 'path') {
-                    if (! in_array($repository->getUrl(), $this->pathRepositoriesToCopy)) {
+                    if (!in_array($repository->getUrl(), $this->pathRepositoriesToCopy)) {
                         $this->pathRepositoriesToCopy[] = $repository->getUrl();
                     }
                 }
@@ -460,13 +459,12 @@ trait GeneralUtils
                 $packages = $matches[1]; // Contiene los nombres de los paquetes
 
                 foreach ($packages as $package) {
-                    if (! in_array($package, $this->pathRepositoriesToCopy)) {
+                    if (!in_array($package, $this->pathRepositoriesToCopy)) {
                         // $this->pathRepositoriesToCopy[] = $package;
                     }
                 }
             }
             dump($this->pathRepositoriesToCopy);
-
         } catch (InvalidArgumentException $e) {
             // The given file could not be found or is not readable
             $this->error('composer.json file not found.');
@@ -479,7 +477,7 @@ trait GeneralUtils
     public function hasPendingGitCommits($directory): bool
     {
         // Cambia al directorio de trabajo
-        if (! is_dir($this->laravel->basePath().'/.git')) {
+        if (!is_dir($this->laravel->basePath() . '/.git')) {
             return false;
         }
         $process = Process::fromShellCommandline('git status --porcelain', $directory);
@@ -491,7 +489,7 @@ trait GeneralUtils
             $output = $process->getOutput();
 
             // Si la salida está vacía, no hay cambios pendientes
-            return ! empty($output);
+            return !empty($output);
         } catch (ProcessFailedException $exception) {
             // Manejar la excepción si el proceso falla
             echo 'Error al ejecutar git status: ', $exception->getMessage();
@@ -504,19 +502,24 @@ trait GeneralUtils
     {
         if ($this->devMode) {
             $this->newLine();
-            $this->line("Running Command [bash -c <comment>'".implode(' ', $args)."'</comment>]");
+            $this->line("Running Command [bash -c <comment>'" . implode(' ', $args) . "'</comment>]");
         }
         $process = new Process($args);
         // Execute the process
-        if (! empty($envVars)) {
+        if (!empty($envVars)) {
             $process->setEnv($envVars);
         }
         $process->run();
 
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+        //if (!empty($process->getErrorOutput())) {
+        //throw new Exception($process->getErrorOutput());
+        //}
         // Capture the output
         return trim($process->getOutput());
     }
-
     public function runComposerCmd(array $args, string $cwd = '.', array $envVars = []): string
     {
 
@@ -526,7 +529,7 @@ trait GeneralUtils
         $process->setTimeout(3600);
         $process->setIdleTimeout(3600);
 
-        if (! empty($cwd)) {
+        if (!empty($cwd)) {
             $process->setWorkingDirectory($cwd);
         }
 
@@ -534,12 +537,12 @@ trait GeneralUtils
             'COMPOSER_ALLOW_SUPERUSER' => 1,
         ];
 
-        if (! empty($envVars)) {
+        if (!empty($envVars)) {
             $process->setEnv($envVars);
         }
 
         if ($this->devMode) {
-            $this->info('Running Command [composer '.implode(' ', $args).']');
+            $this->info('Running Command [composer ' . implode(' ', $args) . ']');
             if (file_exists('/dev/tty') && is_readable('/dev/tty')) {
                 $process->setTty(true);
             }
@@ -557,11 +560,11 @@ trait GeneralUtils
 
         $process->setTimeout(3600);
         $process->setIdleTimeout(3600);
-        if (! empty($input)) {
+        if (!empty($input)) {
             $process->setInput($input);
         }
 
-        if (! empty($cwd)) {
+        if (!empty($cwd)) {
             $process->setWorkingDirectory($cwd);
         }
 
@@ -570,12 +573,12 @@ trait GeneralUtils
             'DOCKER_DEFAULT_PLATFORM' => 'linux/amd64',
         ];
         // Execute the process
-        if (! empty($envVars)) {
+        if (!empty($envVars)) {
             $process->setEnv($envVars);
         }
 
         if ($this->devMode) {
-            $this->info('Running Command [docker '.implode(' ', $args).']');
+            $this->info('Running Command [docker ' . implode(' ', $args) . ']');
             foreach ($envVars as $key => $value) {
                 $this->info("Running EnvVar: [$key => $value]");
             }
@@ -587,8 +590,8 @@ trait GeneralUtils
         try {
             $process->mustRun();
         } catch (ProcessFailedException $exception) {
-            $this->error('An error occurred executing command: '.$process->getCommandLine());
-            $this->error('Code:'.$process->getExitCode().' Description:'.$process->getExitCodeText());
+            $this->error('An error occurred executing command: ' . $process->getCommandLine());
+            $this->error('Code:' . $process->getExitCode() . ' Description:' . $process->getExitCodeText());
             exit(0);
         }
 
@@ -611,7 +614,7 @@ trait GeneralUtils
 
     protected function replaceConfigKey($key, $value, $backup = true, $file = null): void
     {
-        if (! $file) {
+        if (!$file) {
             $configPath = config_path($this->configFile);
         } else {
             $configPath = $file;
@@ -627,20 +630,20 @@ trait GeneralUtils
             if ($i === count($keys) - 1) {
                 $configPart[$part] = $value;
             } else {
-                if (! isset($configPart[$part])) {
+                if (!isset($configPart[$part])) {
                     $configPart[$part] = [];
                 }
                 $configPart = &$configPart[$part];
             }
         }
         if ($backup) {
-            if (file_exists($configPath.'.bak')) {
-                unlink($configPath.'.bak');
+            if (file_exists($configPath . '.bak')) {
+                unlink($configPath . '.bak');
             }
-            copy($configPath, $configPath.'.bak');
+            copy($configPath, $configPath . '.bak');
         }
-        file_put_contents($configPath, '<?php return '.$this->var_export_short($configData, true).';');
-        system(base_path('./vendor/bin/pint').' '.$configPath);
+        file_put_contents($configPath, '<?php return ' . $this->var_export_short($configData, true) . ';');
+        system(base_path('./vendor/bin/pint') . ' ' . $configPath);
         config()->offsetUnset(basename($this->configFile, '.php'));
     }
 

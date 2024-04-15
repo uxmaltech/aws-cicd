@@ -7,7 +7,6 @@ namespace Uxmal\Devtools\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Process;
 
 class GithubWebhookController extends Controller
 {
@@ -18,7 +17,6 @@ class GithubWebhookController extends Controller
   {
 
     $this->validRepositories = config('uxmaltech.git.repositories') ?? [];
-    Log::debug('Valid repositories: ' . json_encode($this->validRepositories));
   }
 
   // Return the trigger event
@@ -55,7 +53,6 @@ class GithubWebhookController extends Controller
         $merged_by = $pull_request['merged_by']['login'] ?? null;
         $number = $pull_request['number'];
 
-        Log::debug('Running build for repository: ' . $repository);
         $this->runBuild($repository);
       }
     } elseif ($event == "push" && $this->isMainBranch($ref)) {
@@ -70,7 +67,7 @@ class GithubWebhookController extends Controller
         'payload' => $payload
       ]);
     }
-    return response()->setStatusCode(200);
+    return response()->json(['status' => 'ok'], 200);
   }
 
   // Run the build process for a given repository
@@ -79,26 +76,24 @@ class GithubWebhookController extends Controller
   // @throws Exception
   private function runBuild(string $repository)
   {
+    $repository = 'uxmaltech/backoffice-ui';
+    $repository = 'uxmaltech/backoffice-ui-npm';
     try {
       // TODO:: Define the list of valid modes
       $mode = strtolower(config('uxmaltech.mode') ?? '');
-      $builder = null;
+      //$builder = null;
 
-      switch ($mode) {
-        case 'docker':
-          $builder = new \Uxmal\Devtools\Services\DockerAppBuilder();
-          break;
-        case 'aws':
-          $builder = new \Uxmal\Devtools\Services\AwsAppBuilder();
-          break;
-        case 'local':
-        case 'dev':
-          $builder = new \Uxmal\Devtools\Services\LocalAppBuilder();
-      }
-      if ($mode == 'docker') {
-      } else {
-        $builder = new \Uxmal\Devtools\Services\LocalAppBuilder();
-      }
+      //switch ($mode) {
+      //case 'docker':
+      //$builder = new \Uxmal\Devtools\Services\DockerAppBuilder();
+      //break;
+      //case 'aws':
+      //$builder = new \Uxmal\Devtools\Services\AwsAppBuilder();
+      //break;
+      //case 'local':
+      //case 'dev':
+      $builder = new \Uxmal\Devtools\Services\LocalAppBuilderService();
+      //}
       $builder->build($repository);
     } catch (\Exception $e) {
       Log::error('Error building repository: ' . $repository, [
