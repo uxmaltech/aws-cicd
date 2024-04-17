@@ -498,6 +498,12 @@ trait GeneralUtils
         }
     }
 
+    // Exectute a shell command using Symfony Process
+    // @param array $args Command arguments
+    // @param array $envVars Environment variables
+    // @param string $path Working directory, default is project directory
+    // @return string Command output
+    // @throws ProcessFailedException
     public function runCmd(array $args, array $envVars = [], string $path = ''): string
     {
         if ($this->devMode) {
@@ -512,14 +518,11 @@ trait GeneralUtils
         if (!empty($path)) {
             $process->setWorkingDirectory($path);
         }
-        $process->setTimeout(120)->setIdleTimeout(15)->run();
+        $process->setTimeout(120)->setIdleTimeout(15)->mustRun();
 
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
-        //if (!empty($process->getErrorOutput())) {
-        //throw new Exception($process->getErrorOutput());
-        //}
         // Capture the output
         return trim($process->getOutput());
     }

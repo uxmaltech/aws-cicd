@@ -37,47 +37,53 @@ class GithubWebhookController extends Controller
 
   public function handle(Request $request)
   {
-    $payload = json_decode($request->getContent(), true);
-    $headers = $request->header();
-    $event = $this->getEvent($headers);
+    try {
+      $payload = json_decode($request->getContent(), true);
+      $headers = $request->header();
+      $event = $this->getEvent($headers);
 
-    $ref = $payload['ref'] ?? null;
-    $repository = $payload['repository']['full_name'] ?? null;
+      $ref = $payload['ref'] ?? null;
+      $repository = $payload['repository']['full_name'] ?? null;
 
-    if ($event == 'pull_request') {
-      $pull_request = $payload['pull_request'];
-      $is_merged = $pull_request['merged'] ?? false;
-      $merged_by = '';
-      if ($is_merged) {
-        // TODO: DO SOMETHING
-        $merged_by = $pull_request['merged_by']['login'] ?? null;
-        $number = $pull_request['number'];
+      if ($event == 'pull_request') {
+        $pull_request = $payload['pull_request'];
+        $is_merged = $pull_request['merged'] ?? false;
+        $merged_by = '';
 
-        $this->runBuild($repository);
+        // If pull request is merged and the destination branch is main
+        if ($is_merged && $pull_request['base']['ref'] == 'main') {
+          $merged_by = $pull_request['merged_by']['login'] ?? null;
+          $number = $pull_request['number'];
+          // TODO: Exec async process
+          $this->runDeploy($repository);
+        }
+      } elseif ($event == "push" && $this->isMainBranch($ref)) {
+        Log::info(
+          'Push to master detected',
+        );
+      } else {
+        // Other events
       }
-    } elseif ($event == "push" && $this->isMainBranch($ref)) {
-      Log::info(
-        'Push to master detected',
-      );
-    } else {
-      Log::info('Event not handled.', [
-        'ref' => $ref,
-        'repository' => $repository,
-        'event' => $event,
-        'payload' => $payload
+      //return response()->json(['status' => 'ok'], 200);
+    } catch (\Exception $e) {
+      Log::error('Error handling webhook', [
+        'error' => $e->getMessage()
       ]);
+      //return response()->json(['status' => 'error'], 500);
+    } finally {
+      return response()->json(['status' => 'ok'], 200);
     }
-    return response()->json(['status' => 'ok'], 200);
   }
 
   // Run the build process for a given repository
   // @param string $repository
   // @return void
   // @throws Exception
-  private function runBuild(string $repository)
+  private function runDeploy(string $repository): void
   {
     $repository = 'uxmaltech/backoffice-ui';
     $repository = 'uxmaltech/backoffice-ui-npm';
+    $repository = 'uxmaltech/backoffice-ui-site';
     try {
       // TODO:: Define the list of valid modes
       $mode = strtolower(config('uxmaltech.mode') ?? 'local');
@@ -99,9 +105,7 @@ class GithubWebhookController extends Controller
       Log::debug('Building repository ' . $repository . ' with mode ' . $mode);
       $builder->build($repository);
     } catch (\Exception $e) {
-      Log::error('Error building repository: ' . $repository, [
-        'error' => $e->getMessage()
-      ]);
+      throw new \Exception($e->getMessage());
     }
   }
 }
