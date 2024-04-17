@@ -80,20 +80,23 @@ class GithubWebhookController extends Controller
     $repository = 'uxmaltech/backoffice-ui-npm';
     try {
       // TODO:: Define the list of valid modes
-      $mode = strtolower(config('uxmaltech.mode') ?? '');
+      $mode = strtolower(config('uxmaltech.mode') ?? 'local');
       //$builder = null;
 
-      //switch ($mode) {
-      //case 'docker':
-      //$builder = new \Uxmal\Devtools\Services\DockerAppBuilder();
-      //break;
-      //case 'aws':
-      //$builder = new \Uxmal\Devtools\Services\AwsAppBuilder();
-      //break;
-      //case 'local':
-      //case 'dev':
-      $builder = new \Uxmal\Devtools\Services\LocalAppBuilderService();
-      //}
+      switch ($mode) {
+        case 'docker':
+          $builder = new \Uxmal\Devtools\Services\DockerAppBuilderService();
+          break;
+        case 'aws':
+          $builder = new \Uxmal\Devtools\Services\AwsAppBuilderService();
+          break;
+        case 'local':
+        case 'dev':
+        default:
+          $builder = new \Uxmal\Devtools\Services\LocalAppBuilderService();
+          break;
+      }
+      Log::debug('Building repository ' . $repository . ' with mode ' . $mode);
       $builder->build($repository);
     } catch (\Exception $e) {
       Log::error('Error building repository: ' . $repository, [

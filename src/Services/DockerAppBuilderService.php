@@ -8,6 +8,6 @@ class DockerAppBuilderService implements AppBuilderInterface
 {
     public function build(string $repository): void
     {
-        echo "Building Docker app for repository " . $repository . "...\n";
+        throw new \Exception('Not implemented yet.');
     }
 }

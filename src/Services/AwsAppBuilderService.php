@@ -8,6 +8,6 @@ class AwsAppBuilderService implements AppBuilderInterface
 {
     public function build(string $repository): void
     {
-        echo "Building AWS app for repository " . $repository . "...\n";
+        throw new \Exception('Not implemented yet.');
     }
 }

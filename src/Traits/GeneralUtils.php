@@ -498,7 +498,7 @@ trait GeneralUtils
         }
     }
 
-    public function runCmd(array $args, array $envVars = []): string
+    public function runCmd(array $args, array $envVars = [], string $path = ''): string
     {
         if ($this->devMode) {
             $this->newLine();
@@ -509,7 +509,10 @@ trait GeneralUtils
         if (!empty($envVars)) {
             $process->setEnv($envVars);
         }
-        $process->run();
+        if (!empty($path)) {
+            $process->setWorkingDirectory($path);
+        }
+        $process->setTimeout(120)->setIdleTimeout(15)->run();
 
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);

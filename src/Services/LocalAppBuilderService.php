@@ -32,12 +32,28 @@ class LocalAppBuilderService implements AppBuilderInterface
         switch ($repository) {
             case 'uxmaltech/backoffice-ui-npm':
                 // TODO: Run git pull
-                $this->buildUiNpm($repository_path);
+                $this->updateRepository($repository_path);
+                $this->buildNpm($repository_path);
+                $this->buildComposerInstall($repository_path);
+                break;
+            case 'uxmaltech/backoffice-ui-site':
+                $$this->updateRepository($repository_path);
+                $this->buildNpm($repository_path);
                 break;
             case 'uxmaltech/backoffice-ui':
-                // TODO: Run composer install/update for backoffice-ui
-                $this->buildBackofficeUi($repository_path);
+                $this->updateRepository($repository_path);
+                $this->buildComposerInstall($repository_path);
                 break;
+        }
+    }
+
+    private function updateRepository(string $repository_path, string $branch = ''): void
+    {
+        try {
+            $this->runCmd(['git', '-C', $repository_path, 'pull', 'origin ', $branch]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            throw new \Exception('error pulling changes');
         }
     }
 
@@ -45,28 +61,18 @@ class LocalAppBuilderService implements AppBuilderInterface
     // @param string $repository_path
     // @return void
     // @throws \Exception
-    private function buildUiNpm(string $repository_path): void
+    private function buildNpm(string $repository_path, bool $build = false): void
     {
         try {
             //Run composer install
-            $npm_path = '/home/edgardo/./.nvm/versions/node/v20.11.1/bin/';
-            $node_path = '/home/edgardo/./.nvm/versions/node/v20.11.1/bin/node';
-            $this->runCmd([$npm_path . 'npm', '--prefix' . $repository_path, 'ci'], ['NODE_PATH' => $node_path]);
-            $this->runCmd(
-                [
-                    'npm', '--prefix' . $repository_path, 'ci'
-                ],
-                [
-                    'NPM_HOME' => $npm_path,
-                    'NODE_HOME' => $node_path
-                ]
-            );
+            $env = ['PATH' => '/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'];
+            // Install dependencies
+            $this->runCmd(['npm', '--prefix' . $repository_path, 'ci'], $env);
+            if ($build) {
+                // Build project
+                $this->runCmd(['npm', '--prefix' . $repository_path, 'run', 'build'], $env);
+            }
         } catch (\Exception $e) {
-
-            Log::error('Error processing backoffice-ui', [
-                'message' => $e->getMessage(),
-                //'trace' => $e->getTraceAsString()
-            ]);
             throw new \Exception($e->getMessage());
         }
     }
@@ -75,18 +81,12 @@ class LocalAppBuilderService implements AppBuilderInterface
     // @param string $repository_path
     // @return void
     // @throws \Exception
-    private function buildBackofficeUi(string $repository_path): void
+    private function buildComposerInstall(string $repository_path): void
     {
         try {
             // Run composer install
-            $this->runCmd(['git', '-C', $repository_path, 'pull',  'origin']);
             $this->runCmd(['composer', 'install', '--no-interaction', '--optimize-autoloader', '--working-dir=' . $repository_path], ['COMPOSER_HOME' => '$HOME/config/.composer']);
         } catch (\Exception $e) {
-
-            Log::error('Error processing backoffice-ui', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
             throw new \Exception('error processing backoffice-ui');
         }
     }
