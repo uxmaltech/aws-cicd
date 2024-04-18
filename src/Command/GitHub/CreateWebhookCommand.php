@@ -4,34 +4,48 @@ namespace Uxmal\Devtools\Command\GitHub;
 
 
 use Illuminate\Console\Command;
-use Github\Client;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Log;
 use Exception;
 
 class CreateWebhookCommand extends Command
 {
-    protected $signature = 'github:create-webhook {--repository=} {--url=}';
+    protected $signature = 'github:create-webhook {--organization= : Active github organization} {--repository= : Repository name (whitout the organization)} {--url= : Full qualified url to receive the webhook}';
     protected $description = 'Create a webhook in multiple repositories.';
 
-    //protected $organization = 'uxmaltech';
-    protected $organization = 'EdgardoAcosta';
+    private $organization = 'uxmaltech';
 
+    function __construct()
+    {
+        parent::__construct();
+    }
     public function handle(): void
     {
 
+        if (empty(config('uxmaltech.git.token'))) {
+            throw new Exception('Github token not found in config file.');
+        }
+
+        $org = $this->option('organization');
         $repository = $this->option('repository');
         $url = $this->option('url');
 
-
         $this->info('Creating webhook in multiple repositories...');
+
+        if (empty($org)) {
+            $this->organization = $org;
+        }
 
         if (empty($repository)) {
             $repository = config('uxmaltech.name');
         }
         if (empty($url)) {
-            $url = "http://" . Request::server('REMOTE_ADDR');
+            $url = $_SERVER['APP_URL'];
+            if (empty($url)) {
+                $url = "http://" . Request::server('REMOTE_ADDR');
+            }
         }
-
+        /
         $this->createWebhook($repository, $url);
     }
 

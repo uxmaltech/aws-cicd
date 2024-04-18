@@ -473,31 +473,6 @@ trait GeneralUtils
             $this->error('composer.json file is not valid.');
         }
     }
-
-    public function hasPendingGitCommits($directory): bool
-    {
-        // Cambia al directorio de trabajo
-        if (!is_dir($this->laravel->basePath() . '/.git')) {
-            return false;
-        }
-        $process = Process::fromShellCommandline('git status --porcelain', $directory);
-
-        try {
-            $process->mustRun();
-
-            // Obtener la salida del comando
-            $output = $process->getOutput();
-
-            // Si la salida está vacía, no hay cambios pendientes
-            return !empty($output);
-        } catch (ProcessFailedException $exception) {
-            // Manejar la excepción si el proceso falla
-            echo 'Error al ejecutar git status: ', $exception->getMessage();
-
-            return false;
-        }
-    }
-
     // Exectute a shell command using Symfony Process
     // @param array $args Command arguments
     // @param array $envVars Environment variables

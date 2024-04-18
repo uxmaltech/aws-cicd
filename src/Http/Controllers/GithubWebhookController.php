@@ -5,6 +5,7 @@
 namespace Uxmal\Devtools\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 
@@ -29,13 +30,20 @@ class GithubWebhookController extends Controller
     return $event[0];
   }
 
-  private function isMainBranch($ref)
+  // Check if the given ref is the main branch
+  // @param string $ref
+  // @return bool
+  private function isMainBranch(string $ref): bool
   {
 
     return $ref == "refs/heads/main" || $ref == "refs/heads/master";
   }
 
-  public function handle(Request $request)
+  // Handle incoming post from Github webhook
+  // @param Request $request
+  // @return void
+  // @throws \Exception
+  public function handle(Request $request): JsonResponse
   {
     try {
       $payload = json_decode($request->getContent(), true);
@@ -55,21 +63,18 @@ class GithubWebhookController extends Controller
           $merged_by = $pull_request['merged_by']['login'] ?? null;
           $number = $pull_request['number'];
           // TODO: Exec async process
+          Log::info(
+            'Building pull request #' . $number . ' merged by ' . $merged_by . ' from repository ' . $repository,
+          );
           $this->runDeploy($repository);
         }
       } elseif ($event == "push" && $this->isMainBranch($ref)) {
-        Log::info(
-          'Push to master detected',
-        );
-      } else {
-        // Other events
+        // TODO: Implemente acction for push to main branch
       }
-      //return response()->json(['status' => 'ok'], 200);
     } catch (\Exception $e) {
       Log::error('Error handling webhook', [
         'error' => $e->getMessage()
       ]);
-      //return response()->json(['status' => 'error'], 500);
     } finally {
       return response()->json(['status' => 'ok'], 200);
     }
@@ -81,13 +86,15 @@ class GithubWebhookController extends Controller
   // @throws Exception
   private function runDeploy(string $repository): void
   {
-    $repository = 'uxmaltech/backoffice-ui';
-    $repository = 'uxmaltech/backoffice-ui-npm';
-    $repository = 'uxmaltech/backoffice-ui-site';
     try {
+      $repositories = $this->validRepositories;
+
+      if (!in_array($repository, array_keys($repositories))) {
+        throw new \Exception('The given repository is not valid');
+      }
+
       // TODO:: Define the list of valid modes
       $mode = strtolower(config('uxmaltech.mode') ?? 'local');
-      //$builder = null;
 
       switch ($mode) {
         case 'docker':
