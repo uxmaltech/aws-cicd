@@ -45,7 +45,6 @@ class CreateWebhookCommand extends Command
                 $url = "http://" . Request::server('REMOTE_ADDR');
             }
         }
-        /
         $this->createWebhook($repository, $url);
     }
 
