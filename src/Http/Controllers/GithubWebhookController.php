@@ -89,13 +89,14 @@ class GithubWebhookController extends Controller
     try {
       $repositories = $this->validRepositories;
 
-      if (!in_array($repository, array_keys($repositories))) {
-        throw new \Exception('The given repository is not valid');
-      }
+      //if (!in_array($repository, array_keys($repositories))) {
+      //throw new \Exception('The given repository is not valid');
+      //}
 
       // TODO:: Define the list of valid modes
       $mode = strtolower(config('uxmaltech.mode') ?? 'local');
 
+      $mode = 'docker';
       switch ($mode) {
         case 'docker':
           $builder = new \Uxmal\Devtools\Services\DockerAppBuilderService();
