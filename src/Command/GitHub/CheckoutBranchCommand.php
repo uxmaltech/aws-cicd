@@ -6,9 +6,9 @@ use Illuminate\Console\Command;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
-class CheckoutMainBranchCommand extends Command
+class CheckoutBranchCommand extends Command
 {
-    protected $signature = 'github:checkout-main';
+    protected $signature = 'github:checkout-branch {--branch=main}';
 
     protected $description = 'Delete the current branch (if not main), checkout, and update the main branch for multiple repositories.';
 
@@ -18,11 +18,13 @@ class CheckoutMainBranchCommand extends Command
 
         foreach ($repositories as $directory) {
             $repositoryPath = realpath($directory);
-            if (! is_dir($repositoryPath)) {
+            if (!is_dir($repositoryPath)) {
                 $this->error("The directory `$repositoryPath` does not exist.");
 
                 continue;
             }
+
+            $branch = $this->option('branch', 'main');
 
             $this->info("Processing '$repositoryPath'...");
 
@@ -30,38 +32,38 @@ class CheckoutMainBranchCommand extends Command
             $process = new Process(['git', '-C', $repositoryPath, 'rev-parse', '--abbrev-ref', 'HEAD']);
             $process->run();
 
-            if (! $process->isSuccessful()) {
+            if (!$process->isSuccessful()) {
                 throw new ProcessFailedException($process);
             }
 
             $currentBranch = trim($process->getOutput());
 
-            if ($currentBranch === 'main') {
-                $this->info("Already on 'main' branch in '$repositoryPath'. Just pulling the latest changes.");
+            if ($currentBranch === $branch) {
+                $this->info("Already on '$branch' branch in '$repositoryPath'. Just pulling the latest changes.");
             } else {
                 // Delete the current branch
                 $deleteProcess = new Process(['git', '-C', $repositoryPath, 'branch', '-d', $currentBranch]);
                 $deleteProcess->run();
-                // No need to check if deletion is successful as we're switching to main regardless
+                // No need to check if deletion is successful as we're switching to $branch regardless
             }
 
-            // Checkout the main branch
-            $checkoutProcess = new Process(['git', '-C', $repositoryPath, 'checkout', 'main']);
+            // Checkout the $branch branch
+            $checkoutProcess = new Process(['git', '-C', $repositoryPath, 'checkout', $branch]);
             $checkoutProcess->run();
-            if (! $checkoutProcess->isSuccessful()) {
+            if (!$checkoutProcess->isSuccessful()) {
                 throw new ProcessFailedException($checkoutProcess);
             }
 
             // Pull the latest changes
-            $pullProcess = new Process(['git', '-C', $repositoryPath, 'pull', 'origin', 'main']);
+            $pullProcess = new Process(['git', '-C', $repositoryPath, 'pull', 'origin', $branch]);
             $pullProcess->run();
-            if (! $pullProcess->isSuccessful()) {
+            if (!$pullProcess->isSuccessful()) {
                 throw new ProcessFailedException($pullProcess);
             }
 
-            $this->info("Updated 'main' branch in '$repositoryPath'.");
+            $this->info("Updated $branch branch in '$repositoryPath'.");
         }
 
-        $this->info('Main branch checkout and update complete for all specified repositories.');
+        $this->info($branch . ' branch checkout and update complete for all specified repositories.');
     }
 }
