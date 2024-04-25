@@ -222,12 +222,7 @@ class DockerService
     public function runContainer(string $imageName, array $args = []): void
     {
 
-       
-        // $cmd = [];
-        // if (isset($args['cmd'])) {
-        //     $cmd = $args;
-        //     unset($args['cmd']);
-        // }
+
         $containerId = $this->createContainer($imageName, $args);
         // $containerId = mb_substr($containerId, 0, 12);
         if (empty($containerId)) {
