@@ -3,16 +3,13 @@
 namespace Uxmal\Devtools\Services;
 
 use Uxmal\Devtools\Traits\GitTrait;
-use Uxmal\Devtools\Traits\DockerTrait;
-use Uxmal\Devtools\Interfaces\AppBuilderInterface;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
+use Uxmal\Devtools\Interfaces\AppBuilderInterface;
 
 class DockerAppBuilderService implements AppBuilderInterface
 {
     use GitTrait;
-    use DockerTrait;
     public function build(string $repository): void
     {
         Log::info('Building docker images...');
@@ -25,15 +22,47 @@ class DockerAppBuilderService implements AppBuilderInterface
         try {
             $prefix = config('uxmaltech.prefix', 'uxtch');
 
-            $nginx_base_image = $prefix . '-nginx' . $this->nginxVersion . '-alpine' . $this->alpineVersion;
-            $path = __DIR__ . '/../Command/Docker/base-images/uxtch-nginx/';
+            // $nginx_base_image = $prefix . '-nginx' . $this->nginxVersion . '-alpine' . $this->alpineVersion;
+            $nginx_base_image = "uxtch-nginx1.24-alpine3.19";
+            $path = __DIR__ . '/../Command/Docker/base-images/uxtch-nginx';
+            // $path = '/home/edgardo/repositories/uxmal/devtools/src/Command/Docker/base-images/uxtch-nginx';
 
+            $docker = new DockerService();
 
+            // List all images in the system
+            // $list = $docker->listImages();
+            
+            // Log::info('Docker images', [
+            //     'list' => $list
+            // ]);
 
-            //$images = $this->dockerImageList();
-            //Log::info('Docker images', ['images' => $images]);
+            // Pull image from docker hub
+            // $docker->pullImage('nginx')
+            
+            // Build image from local Dockerfile
+            // $response =$docker->buildImage($nginx_base_image, 'latest', $path);
+            // Log::info('Docker::buildImage', [
+            //     'response' => $response
+            // ]);
 
-            $this->buildImage($nginx_base_image, 'latest', $path);
+            // Tag existing image
+            // $response = $docker->tagImage($nginx_base_image, 'v2');
+            // Log::info('Docker::tagImage', [
+            //     'response' => $response
+            // ]);
+
+            // Run a container 
+            $response = $docker->runContainer("nginx", [
+                't' => 'nginx',
+                'detach' => true,
+                'publish' => '8080:80',
+                'Tty' => true,
+                'Env' => [
+                    'FOO=bar',
+                    'BAZ=qux'
+                ],
+                'Cmd' => ["nginx", "-g", "daemon off;"]
+            ]);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             throw new \Exception('error building docker images');

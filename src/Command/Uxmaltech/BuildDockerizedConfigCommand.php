@@ -5,12 +5,12 @@ namespace Uxmal\Devtools\Command\Uxmaltech;
 use Illuminate\Console\Command;
 use Random\RandomException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
-use Uxmal\Devtools\Traits\DockerUtils;
+use Uxmal\Devtools\Traits\DockerTrait;
 use Uxmal\Devtools\Traits\GeneralUtils;
 
 class BuildDockerizedConfigCommand extends Command
 {
-    use DockerUtils, GeneralUtils;
+    use DockerTrait, GeneralUtils;
 
     /**
      * The console command name.

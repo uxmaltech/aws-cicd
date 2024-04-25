@@ -3,15 +3,14 @@
 namespace Uxmal\Devtools\Command\Docker;
 
 use Illuminate\Console\Command;
-use JetBrains\PhpStorm\NoReturn;
 use Random\RandomException;
 use Symfony\Component\Console\Helper\TableSeparator;
-use Uxmal\Devtools\Traits\DockerUtils;
+use Uxmal\Devtools\Traits\DockerTrait;
 use Uxmal\Devtools\Traits\GeneralUtils;
 
 class BuildBaseImagesCommand extends Command
 {
-    use DockerUtils, GeneralUtils;
+    use DockerTrait, GeneralUtils;
 
     /**
      * The console command name.
@@ -48,7 +47,6 @@ class BuildBaseImagesCommand extends Command
     /**
      * Build the base docker image.
      */
-    #[NoReturn]
     protected function buildDockerImage(): void
     {
         $this->line('Building the base docker image for '.config('uxmaltech.name').' ...');

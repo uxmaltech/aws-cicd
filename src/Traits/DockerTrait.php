@@ -2,9 +2,11 @@
 
 namespace Uxmal\Devtools\Traits;
 
-use Docker\Docker;
 use Docker\API\Model\BuildInfo;
+use Docker\Docker;
+use Illuminate\Process\Exceptions\ProcessFailedException;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\Process\Process;
 
 trait DockerTrait
 {
@@ -36,6 +38,24 @@ trait DockerTrait
     protected function getPhpCliImage(): string
     {
         return "php:{$this->phpVersion}-cli-alpine:{$this->alpineVersion}";
+    }
+
+    // Validate docker engine exists
+    // @return bool
+    protected function validateDockerEngine(): bool
+    {
+        $command = ['docker', '-v'];
+        $process = new Process($command);
+        try {
+            $process->setTimeout(60)->setIdleTimeout(15)->mustRun();
+            if ($process->isSuccessful()) {
+                return true;
+            }
+            return false;
+        } catch (ProcessFailedException $exception) {
+            // Log::error('Docker engine not found');
+            return false;
+        }
     }
 
     protected function dockerImageList(): array
@@ -77,8 +97,11 @@ trait DockerTrait
         try {
             if (!is_dir($dockerfilePath)) {
                 throw new \Exception('The directory ' . $dockerfilePath . ' does not exists.');
-                //$dockerfilePath = __DIR__ . '/../Command/Docker/base-images/uxtch-nginx/';
             }
+            if (!is_file($dockerfilePath . '/Dockerfile')) {
+                throw new \Exception('The file ' . $dockerfilePath . '/Dockerfile does not exists.');
+            }
+
             if (empty($name)) {
                 throw new \Exception('Name is required');
             }
@@ -87,68 +110,36 @@ trait DockerTrait
             }
 
 
+            // $docker = Docker::create();
+            $docker = Docker::create();
             $context = new \Docker\Context\Context($dockerfilePath);
             $stream = $context->toStream();
-            $docker = Docker::create();
 
-            $buildStream = $docker->imageBuild($stream);
-            Log::debug('1');
-            $body = $buildStream->getBody();
-            Log::debug('2');
-            Log::debug('response', [
-                'body' => $body
+            $buildStream  = $docker->imageBuild($stream, [
+
+                't' => $name . ':' . $version,
+                'nocache' => true,
+
             ]);
-            while (!$body->eof()) {
-                $line = $body->read(1024);
-                Log::debug('Image build : ' . $line);
-            }
-
-            //$buildStream->onFrame(function (BuildInfo $buildInfo) {
-
-            //echo $buildInfo->getStream();
-            //});
-
-            //$buildStream->wait();
-            //$context = new \Docker\Context\Context($dockerfilePath);
-            //$stream = $context->toStream();
-
-            //$docker = Docker::create();
-            //Log::debug('Context created', [
-            //'context' => $context,
-            //'stream' => $stream,
-            //'docker' => $docker,
-            //'name' => $name,
-            //'version' => $version,
-            //'dockerfilePath' => $dockerfilePath
-            //]);
 
 
-            //$out = $docker->imageBuild($stream, [
+            // $buildStream->onFrame(function (BuildInfo $buildInfo) {
+            //     Log::info([
+            //         'build' => $buildInfo->getStream()
+            //     ]);
+            // });
 
-            //'t' => $name . ':' . $version,
-            //'remote' => 'http://localhost:2375',
-            //'q' => true,
-            //]);
-            //Read from the stream until the end of data
-            //while (!feof($out)) {
-            //Read a line from the stream
-            //$line = fgets($out);
-
-            //Process the line (example: print it)
-            //echo $line;
-            //Log::debug('Image build', [
-            //'line' => $line
-            //]);
-            //}
-
-            //Close the stream
-            //fclose($stream);
-            //Log::debug('Image built', [
-            //'out' => $out
-            //]);
+            $buildStream->wait();
         } catch (\Exception $e) {
             Log::error($e->getMessage());
-            throw new \Exception('error building image');
+            throw new \Exception('error building image -> ' . $e->getMessage());
         }
+    }
+
+
+    protected function buildAndTagImage(){
+
+        
+
     }
 }

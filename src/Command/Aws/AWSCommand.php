@@ -8,13 +8,13 @@ use Uxmal\Devtools\Traits\AWS\EC2Utils;
 use Uxmal\Devtools\Traits\AWS\ECRUtils;
 use Uxmal\Devtools\Traits\AWS\ECSUtils;
 use Uxmal\Devtools\Traits\AWS\Route53Utils;
-use Uxmal\Devtools\Traits\DockerUtils;
+use Uxmal\Devtools\Traits\DockerTrait;
 use Uxmal\Devtools\Traits\GeneralUtils;
 
 class AWSCommand extends Command
 {
     use CloudWatchLogUtils,
-        DockerUtils,
+        DockerTrait,
         EC2Utils,
         ECRUtils,
         ECSUtils,

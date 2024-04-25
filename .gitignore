@@ -25,3 +25,8 @@ Homestead.json
 /nodup/
 /..bfg-report/
 .DS_Store
+
+# Generated files
+**/*.tar
+**/*.tar.gz
+**/*.docker/
