@@ -2,17 +2,13 @@
 
 namespace Uxmal\Devtools\Services;
 
-use AWS\CRT\HTTP\Response;
 use Exception;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
-use Illuminate\Support\Facades\Log;
-
-use Illuminate\Http\Request;
-// use Illuminate\Support\Facades\Http;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Psr7\Response as Psr7Response;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\Process\Process;
 
 class DockerService
 {
@@ -22,6 +18,7 @@ class DockerService
     private $regisrty = 'docker.io';
     public $socketMode = true;
     private const DOCKER_SOCKET = 'unix:///var/run/docker.sock';
+    private const DOCKER_ENV_SUFFIX = 'DOCKERIZED_';
     private const BASE_URL = 'http://localhost:2375';
 
     public const DOCKER_API_VERSION = 'v1.41';
@@ -57,15 +54,14 @@ class DockerService
 
             $response = $this->client->request($method, $uri, $options);
             return $response;
-        } catch (Exception $e) {
-            Log::error('DockerService::makeRequest', [
-                'method' => $method,
-                'uri' => $uri,
-                'options' => $options,
-                'error' => $e->getMessage()
-            ]);
-            // Handle errors here, for example:
-            // echo 'Caught exception: ',  $e->getMessage(), "\n";
+        } catch (BadResponseException $e) {
+            // Log::error('DockerService::makeRequest', [
+            //     'method' => $method,
+            //     'uri' => $uri,
+            //     'status' => $e->getCode(),
+            //     'error' => $e->getMessage()
+            // ]);
+            throw new Exception(trim($e->getResponse()->getBody()->getContents()));
             return null;
         }
     }
@@ -108,7 +104,6 @@ class DockerService
         $images = [];
         $response = $this->makeRequest('get', 'images/json');
 
-
         $body = json_decode($response->getBody(), true);
         foreach ($body as $image) {
             if (isset($image['RepoTags']) && is_array($image['RepoTags']) && sizeof($image['RepoTags']) > 0) {
@@ -123,9 +118,13 @@ class DockerService
 
     public function getImageByName(string $name): array
     {
-        $response = $this->makeRequest('get', 'images/' . $name . '/json');
-        $body = json_decode($response->getBody(), true);
-        return $body;
+        try {
+            $response = $this->makeRequest('get', 'images/' . $name . '/json');
+            $body = json_decode($response->getBody(), true);
+            return $body;
+        } catch (Exception $e) {
+            return [];
+        }
     }
 
     public function pullImage(string $image, string $tag = 'latest'): bool
@@ -135,11 +134,6 @@ class DockerService
         $url = 'images/create?fromImage=' . $image . '&tag=' . $tag;
         $response = $this->makeRequest('post', $url);
 
-        // Log::debug('DockerService::pullImage', [
-        //     'image' => $image,
-        //     'tag' => $tag,
-        //     'response' => $response->getBody()
-        // ]);
         return $response->getStatusCode() == 200;
     }
 
@@ -147,12 +141,12 @@ class DockerService
     {
         try {
             // Converty the dockerfile to a tar file in the tmp dir
-            $dockeFile = fopen($this->dockerFileToTar($dockerfilePath), 'r');
+            $dockerFile = fopen($this->dockerFileToTar($dockerfilePath), 'r');
             $opts = [
                 'headers' => [
                     'Content-Type' => 'application/octet-stream',
                 ],
-                'body' => $dockeFile,
+                'body' => $dockerFile,
                 'query' => [
                     't' => $name . ':' . $version,
                     'nocache' => 'true',
@@ -163,17 +157,11 @@ class DockerService
             $response = $this->makeRequest('post', 'build', $opts);
             return $response->getStatusCode() == 200;
         } catch (Exception $e) {
-            Log::debug('DockerService::buildImage', [
-                'e' => $e->getMessage(),
-                'name' => $name,
-                'version' => $version,
-                'dockerfilePath' => $dockerfilePath,
-            ]);
             throw new Exception($e->getMessage());
         }
     }
 
-    public function tagImage(string $image, string $tag): void
+    public function tagImage(string $image, string $tag = 'latest'): void
     {
         $opts = [
             'query' => [
@@ -191,11 +179,18 @@ class DockerService
         $this->makeRequest('post', $url, $opts);
     }
 
-    private function createContainer($imageName, array $args): string
+    private function createContainer($imageName, array $args, $pullIfNotPresent = false): string
     {
         $image = $this->getImageByName($imageName);
         if (sizeof($image) == 0 || !isset($image['Id'])) {
-            throw new Exception('Image ' . $imageName . ' does not exist');
+            if ($pullIfNotPresent) {
+                $pulled = $this->pullImage($imageName);
+                if (!$pulled) {
+                    throw new Exception('Error pulling image ' . $imageName);
+                }
+            } else {
+                throw new Exception('Image ' . $imageName . ' does not exist');
+            }
         }
 
         $image = $this->getImageByName($imageName);
@@ -215,21 +210,18 @@ class DockerService
         $containerId = $body['Id'];
 
         return $containerId;
-
-
     }
 
-    public function runContainer(string $imageName, array $args = []): void
+    public function runContainer(string $imageName, array $args = [], $pullIfNotPresent = false): void
     {
 
 
-        $containerId = $this->createContainer($imageName, $args);
-        // $containerId = mb_substr($containerId, 0, 12);
+        $containerId = $this->createContainer($imageName, $args, $pullIfNotPresent);
         if (empty($containerId)) {
             throw new Exception('Error creating container');
         }
 
-      
+
         $response = $this->makeRequest('post', 'containers/' . $containerId . '/start',);
         if ($response->getStatusCode() >= 400) {
             throw new Exception('Error starting container');

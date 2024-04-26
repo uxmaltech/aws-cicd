@@ -686,4 +686,40 @@ trait GeneralUtils
     {
         return config('devtools.version', '0.0.1');
     }
+
+    public function generateFileFromStub(string $stubFile, string $file, array $replacements = []): void
+    {
+        try {
+            if (!file_exists($stubFile)) {
+                throw new Exception("Stub file $stubFile not found.");
+            }
+            $envVars = $this->arrayToEnvNotation($replacements);
+            $process = new Process(['envsubst', '--help',]);
+            // $process = new Process(['envsubst', '<', $stubFile, '>', $file]);
+            // $process->setEnv($envVars);
+            $process->setIdleTimeout(60)->setTimeout(120)->mustRun();
+            Log::debug('GeneralUtils::generateFileFromStub', [$process->getOutput()]);
+            throw new Exception('Not implemented');
+        } catch (Exception $e) {
+            Log::error('GeneralUtils::generateFileFromStub', [
+                'error' => $e->getMessage()
+            ]);
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function arrayToEnvNotation($array, $prefix = 'DOCKERIZED_'): array
+    {
+        $results = ['DOLLAR' => '$'];
+
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $results = array_merge($results, $this->arrayToEnvNotation($value, $prefix . $key . '_'));
+            } else {
+                $results[str_replace(['-'], ['_'], strtoupper($prefix . $key))] = str_replace(['/tcp'], [''], $value);
+            }
+        }
+
+        return $results;
+    }
 }
