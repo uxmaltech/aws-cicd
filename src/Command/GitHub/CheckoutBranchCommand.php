@@ -51,14 +51,14 @@ class CheckoutBranchCommand extends Command
             $checkoutProcess = new Process(['git', '-C', $repositoryPath, 'checkout', $branch]);
             $checkoutProcess->run();
             if (!$checkoutProcess->isSuccessful()) {
-                throw new ProcessFailedException($checkoutProcess);
+                $this->error("Failed to checkout $branch branch in '$repositoryPath'.");
             }
 
             // Pull the latest changes
             $pullProcess = new Process(['git', '-C', $repositoryPath, 'pull', 'origin', $branch]);
             $pullProcess->run();
             if (!$pullProcess->isSuccessful()) {
-                throw new ProcessFailedException($pullProcess);
+                $this->error("Failed to pull the latest changes for $branch branch in '$repositoryPath'.");
             }
 
             $this->info("Updated $branch branch in '$repositoryPath'.");
