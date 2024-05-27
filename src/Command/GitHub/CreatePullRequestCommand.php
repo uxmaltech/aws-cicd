@@ -33,17 +33,17 @@ class CreatePullRequestCommand extends Command
         $this->call('github:commit-push');
 
         $ini_data = [];
-        if( file_exists('./'.$branch.'.message.ini') ){
-            $ini_data = parse_ini_file('./'.$branch.'.message.ini', true);
+        if (file_exists('./' . $branch . '.message.ini')) {
+            $ini_data = parse_ini_file('./' . $branch . '.message.ini', true);
         }
 
 
         foreach ($repositories as $repository => $repositoryPath) {
             if (isset($ini_data[$repository])) {
                 $body = "";
-                foreach($ini_data[$repository] as $key => $value) {
-                    if(str_starts_with($key, 'line')){
-                        $body .= $value."\n";
+                foreach ($ini_data[$repository] as $key => $value) {
+                    if (str_starts_with($key, 'line')) {
+                        $body .= $value . "\n";
                     }
                 }
             } else {
@@ -54,7 +54,7 @@ class CreatePullRequestCommand extends Command
             $repositoryPath = realpath($repositoryPath);
 
             // Check if the repository path exists
-            if (! is_dir($repositoryPath)) {
+            if (!is_dir($repositoryPath)) {
                 $this->error("The directory for repository '{$repository}' does not exist.");
                 continue;
             }
@@ -63,7 +63,7 @@ class CreatePullRequestCommand extends Command
             $process = new Process(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], $repositoryPath);
             $process->run();
 
-            if (! $process->isSuccessful()) {
+            if (!$process->isSuccessful()) {
                 throw new ProcessFailedException($process);
             }
 
@@ -82,27 +82,34 @@ class CreatePullRequestCommand extends Command
                 $this->info("Body: $body");
                 $client = new Client();
 
-                $response = $client->post("https://api.github.com/repos/$repository/pulls", [
-                    'headers' => [
-                        'Accept' => 'application/vnd.github+json',
-                        'Authorization' => 'Bearer '.$githubToken,
-                        'Content-Type' => 'application/json',
-                        'X-GitHub-Api-Version' => '2022-11-28',
-                    ],
-                    'json' => [
-                        'title' => $branch,
-                        'head' => $head,
-                        'base' => $base,
-                        'body' => $body,
-                    ],
-                ]);
+                try {
+                    $response = $client->post("https://api.github.com/repos/$repository/pulls", [
+                        'headers' => [
+                            'Accept' => 'application/vnd.github+json',
+                            'Authorization' => 'Bearer ' . $githubToken,
+                            'Content-Type' => 'application/json',
+                            'X-GitHub-Api-Version' => '2022-11-28',
+                        ],
+                        'json' => [
+                            'title' => $branch,
+                            'head' => $head,
+                            'base' => $base,
+                            'body' => $body, ≥
+                        ],
+                    ]);
 
-                if ($response->getStatusCode() == 201) {
-                    $this->info("Pull request created successfully for $repository from $head to $base!");
-                } else if ($response->getStatusCode() == 422) {
-                    $this->info("Pull request already exists for $repository from $head to $base!");
-                } else {
-                    $this->error("Failed to create the pull request for $repository.");
+                    if ($response->getStatusCode() == 201) {
+                        $this->info("Pull request created successfully for $repository from $head to $base!");
+                    } else if ($response->getStatusCode() == 422) {
+                        $this->info("Pull request already exists for $repository from $head to $base!");
+                    } else {
+                        $this->error("Failed to create the pull request for $repository.");
+                    }
+                } catch (\GuzzleHttp\Exception\ClientException $e) {
+                    $this->error("An error occurred while creating the pull request: " . $e->getMessage());
+                    $this->error("error code: " . $e->getCode());
+                } catch (\Exception $e) {
+                    $this->error("An error occurred while creating the pull request: " . $e->getMessage());
                 }
             }
         }
