@@ -79,7 +79,6 @@ class CreatePullRequestCommand extends Command
                 $this->info("No changes detected for '$repository' between branches '$head' and '$base'. Skipping pull request creation.");
             } else {
                 $this->info("Creating pull request for '$repository' from '$head' to '$base' => https://api.github.com/repos/$repository/pulls ...");
-                $this->info("Body: $body");
                 $client = new Client();
 
                 try {
