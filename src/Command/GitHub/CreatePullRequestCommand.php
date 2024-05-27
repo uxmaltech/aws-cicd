@@ -106,8 +106,20 @@ class CreatePullRequestCommand extends Command
                         $this->error("Failed to create the pull request for $repository.");
                     }
                 } catch (\GuzzleHttp\Exception\ClientException $e) {
-                    $this->error("An error occurred while creating the pull request: " . $e->getMessage());
-                    $this->error("error code: " . $e->getCode());
+                    switch( $e->getCode() ){
+                        case 401:
+                            $this->error("Unauthorized: Please check your GitHub token.");
+                            break;
+                        case 404:
+                            $this->error("Repository not found: Please check the repository name.");
+                            break;
+                        case 422:
+                            $this->info("Pull request already exists for $repository from $head to $base!");
+                            break;
+                        default:
+                            $this->error("An error occurred while creating the pull request: " . $e->getMessage());
+                            $this->error("error code: " . $e->getCode());
+                    }
                 } catch (\Exception $e) {
                     $this->error("An error occurred while creating the pull request: " . $e->getMessage());
                 }
