@@ -81,6 +81,7 @@ class CreatePullRequestCommand extends Command
                 $this->info("Creating pull request for '$repository' from '$head' to '$base' => https://api.github.com/repos/$repository/pulls ...");
                 $this->info("Body: $body");
                 $client = new Client();
+
                 $response = $client->post("https://api.github.com/repos/$repository/pulls", [
                     'headers' => [
                         'Accept' => 'application/vnd.github+json',
@@ -98,6 +99,8 @@ class CreatePullRequestCommand extends Command
 
                 if ($response->getStatusCode() == 201) {
                     $this->info("Pull request created successfully for $repository from $head to $base!");
+                } else if ($response->getStatusCode() == 422) {
+                    $this->info("Pull request already exists for $repository from $head to $base!");
                 } else {
                     $this->error("Failed to create the pull request for $repository.");
                 }
