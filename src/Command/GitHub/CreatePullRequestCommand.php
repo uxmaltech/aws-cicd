@@ -94,7 +94,7 @@ class CreatePullRequestCommand extends Command
                             'title' => $branch,
                             'head' => $head,
                             'base' => $base,
-                            'body' => $body, ≥
+                            'body' => $body,
                         ],
                     ]);
 
