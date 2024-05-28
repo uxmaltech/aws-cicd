@@ -10,7 +10,7 @@ use Symfony\Component\Process\Process;
 
 class CreatePullRequestCommand extends Command
 {
-    protected $signature = 'github:create-pull-request {branch}';
+    protected $signature = 'github:create-pull-request {--branch=}';
 
     protected $description = 'Create a GitHub pull request for multiple repositories with the current branch against main, skip if up to date.';
 
@@ -21,7 +21,7 @@ class CreatePullRequestCommand extends Command
     public function handle(): void
     {
         $repositories = config('uxmaltech.git.repositories');
-        $branch = $this->argument('branch');
+        $branch = $this->option('branch');
 
         $githubToken = config('uxmaltech.git.token');
         if ($githubToken == 'YOUR_GITHUB_TOKEN') {

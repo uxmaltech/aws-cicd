@@ -8,13 +8,13 @@ use Symfony\Component\Process\Process;
 
 class CreateBranchCommand extends Command
 {
-    protected $signature = 'github:create-branch {name}';
+    protected $signature = 'github:create-branch {--branch=}';
 
     protected $description = 'Create a new branch in multiple directories';
 
     public function handle(): void
     {
-        $branchName = $this->argument('name');
+        $branchName = $this->option('branch');
 
         $repositories = config('uxmaltech.git.repositories');
 
